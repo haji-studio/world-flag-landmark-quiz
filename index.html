@@ -1,0 +1,1019 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f172a;--card:#1e293b;--brd:#334155;--txt:#f1f5f9;--mut:#94a3b8;--dim:#64748b;--acc:#6366f1;--ok:#22c55e;--no:#ef4444;--warn:#f59e0b}
+#app{font-family:'Apple SD Gothic Neo','PingFang SC','Malgun Gothic',sans-serif;max-width:500px;margin:0 auto;padding:14px;background:var(--bg);border-radius:14px;min-height:100svh}
+.scr{display:none}.scr.on{display:block;animation:fd .3s ease}
+@keyframes fd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fu{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-65px)}}
+@keyframes shk{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.bp{width:100%;padding:11px;border-radius:9px;border:none;background:var(--acc);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.bp:hover{opacity:.88}
+.bs{width:100%;padding:10px;border-radius:9px;border:1px solid var(--brd);background:var(--card);color:var(--mut);font-size:13px;cursor:pointer;transition:border-color .2s}
+.bs:hover{border-color:var(--acc)}
+input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:var(--bg);color:var(--txt);font-size:14px;outline:none}
+input:focus{border-color:var(--acc)}
+.mc{background:var(--card);border:2px solid var(--brd);border-radius:12px;padding:16px 12px;cursor:pointer;text-align:center;transition:all .2s}
+.mc:hover{transform:translateY(-2px)}
+.ob{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border-radius:9px;border:1px solid var(--brd);background:var(--card);font-size:13px;font-weight:500;cursor:pointer;text-align:left;margin-bottom:7px;color:var(--mut);transition:all .15s}
+.ob:hover:not([disabled]){border-color:var(--acc);background:#1a2a4a}
+.ob[disabled]{cursor:default}
+.ob.ok{background:#052e16!important;border-color:#22c55e!important;color:#4ade80!important}
+.ob.no{background:#450a0a!important;border-color:#ef4444!important;color:#f87171!important}
+.ob.dm{opacity:.28!important}
+.ol{width:26px;height:26px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--acc);flex-shrink:0}
+.ob.ok .ol{background:#14532d;color:#4ade80}
+.ob.no .ol{background:#7f1d1d;color:#f87171}
+/* Timer bar */
+.tbar-wrap{width:100%;height:8px;background:var(--brd);border-radius:99px;overflow:hidden;margin-bottom:10px}
+.tbar{height:100%;width:0%;border-radius:99px;transition:width 1s linear,background .5s}
+/* Progress bar */
+.pr{background:var(--brd);border-radius:99px;height:5px;overflow:hidden}
+.pf{height:100%;background:var(--acc);border-radius:99px;transition:width .3s}
+/* Float */
+.fl{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:22px;font-weight:800;pointer-events:none;animation:fu 1.2s ease-out forwards;white-space:nowrap;z-index:9}
+#gw{position:relative}
+.ht{font-size:18px;display:inline-block}
+.ht.lost{opacity:.2;filter:grayscale(1)}
+.lr{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;border:1px solid var(--brd);background:var(--card);margin-bottom:6px}
+.lr.me{border-color:var(--acc);background:#1e1b4b}
+.tab{flex:1;padding:7px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:500;background:transparent;color:var(--dim);transition:all .2s}
+.tab.on{background:var(--acc);color:#fff}
+.qtab{display:flex;background:var(--card);border-radius:9px;padding:3px;margin-bottom:10px;border:1px solid var(--brd)}
+.qtab-btn{flex:1;padding:8px 4px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:500;background:transparent;color:var(--dim);transition:all .2s}
+.qtab-btn.on{background:var(--acc);color:#fff}
+.diff-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.dbtn{padding:8px 4px;border-radius:9px;border:1px solid var(--brd);background:var(--card);color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.dbtn.on{background:#22c55e18;color:#4ade80;border-color:#22c55e}
+.q-title{font-size:16px;font-weight:800;color:var(--txt);line-height:1.35;margin-bottom:12px}
+.q-sub{font-size:11px;color:var(--dim);margin-top:7px}
+.lang-row{display:flex;gap:6px;justify-content:flex-end;margin-bottom:12px}
+.lbtn{padding:4px 11px;border-radius:20px;border:1px solid var(--brd);background:transparent;color:var(--mut);font-size:11px;cursor:pointer;transition:all .2s}
+.lbtn.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+/* Landmark image */
+.lm-wrap{position:relative;margin-bottom:4px}
+.lm-img{width:100%;height:190px;object-fit:cover;border-radius:10px;border:1px solid var(--brd);display:block}
+.lm-badge{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.7);color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;backdrop-filter:blur(4px);pointer-events:none}
+.lm-fb{width:100%;height:190px;border-radius:10px;border:1px solid var(--brd);background:var(--card);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px}
+/* snd button */
+.sndbtn{position:fixed;bottom:16px;right:16px;width:42px;height:42px;border-radius:50%;background:var(--card);border:1px solid var(--brd);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;transition:background .2s}
+.sndbtn:hover{background:var(--acc)}
+
+/* V4 polish: classroom-friendly world adventure UI */
+body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 100%);}
+#app{position:relative;overflow:hidden;box-shadow:0 22px 60px rgba(2,6,23,.55);background:linear-gradient(180deg,#10203f 0%,#0f172a 36%,#111827 100%)}
+#app:before{content:"";position:absolute;inset:-80px -40px auto auto;width:180px;height:180px;background:radial-gradient(circle,#38bdf855,transparent 62%);filter:blur(4px);pointer-events:none}
+.hero{position:relative;border:1px solid #334155;background:linear-gradient(135deg,#1e3a8a55,#7c3aed33 55%,#14b8a633);border-radius:18px;padding:18px 14px 16px;margin-bottom:12px;overflow:hidden}
+.hero:after{content:"✦ ✧ ✦";position:absolute;right:16px;top:12px;color:#fbbf2488;font-size:16px;letter-spacing:6px}
+.hero-planet{font-size:52px;margin-bottom:6px;animation:shk 3.8s ease-in-out infinite}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.pill{font-size:10px;color:#cbd5e1;border:1px solid #475569;background:#02061755;padding:4px 8px;border-radius:99px}
+.mc{background:linear-gradient(180deg,#1e293b,#111827);min-height:150px;position:relative;overflow:hidden}
+.mc:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 42%);pointer-events:none}
+.mc.daily{grid-column:1/3;border-color:#f59e0b;background:linear-gradient(135deg,#451a03,#1e293b 55%,#0f172a)}
+.mc.daily .daily-tag{display:inline-block;font-size:10px;color:#fde68a;background:#f59e0b22;border:1px solid #f59e0b55;padding:2px 8px;border-radius:99px;margin-top:8px}
+.flag-frame{position:relative;width:220px;margin:0 auto;padding:10px;border-radius:16px;background:linear-gradient(145deg,#e2e8f0,#94a3b8);box-shadow:0 16px 30px rgba(0,0,0,.25)}
+.flag-frame:after{content:"";position:absolute;inset:10px;border-radius:8px;background:linear-gradient(135deg,rgba(255,255,255,.18),transparent 38%);pointer-events:none}
+#qtitle{background:linear-gradient(90deg,#fff,#c7d2fe);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lm-wrap:after{content:"REAL PHOTO";position:absolute;top:8px;right:8px;font-size:9px;letter-spacing:.5px;color:#fff;background:rgba(15,23,42,.72);border:1px solid rgba(255,255,255,.18);padding:3px 7px;border-radius:99px;backdrop-filter:blur(6px)}
+.ob{min-height:54px;border-radius:13px;background:linear-gradient(180deg,#1e293b,#111827)}
+.ob:hover:not([disabled]){transform:translateY(-1px);box-shadow:0 8px 20px rgba(2,6,23,.35)}
+.result-title{display:inline-block;margin:3px 0 8px;padding:5px 12px;border-radius:99px;background:#f59e0b1d;border:1px solid #f59e0b55;color:#fde68a;font-size:13px;font-weight:800}
+.review-card{padding:10px 0;border-top:1px solid var(--brd);display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center}
+.review-q{font-size:11px;color:#cbd5e1;margin-bottom:4px;font-weight:700}
+.review-note{font-size:11px;color:#94a3b8;margin-top:3px;line-height:1.35}
+.voicebtn{position:fixed;bottom:64px;right:16px;width:42px;height:42px;border-radius:50%;background:var(--card);border:1px solid var(--brd);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;transition:background .2s}
+.voicebtn.on{background:#f59e0b;color:#111827;border-color:#f59e0b}
+.voicebtn:hover{background:#f59e0b;color:#111827}
+@media(max-width:420px){#app{border-radius:0}.hero{padding-top:16px}.flag-frame{width:205px}.lm-img,.lm-fb{height:175px}.ob{font-size:12px}}
+
+</style>
+
+<div id="app">
+
+<!-- Home -->
+<div id="s-home" class="scr on">
+  <div class="lang-row">
+    <button class="lbtn on" id="lb-ko" onclick="setLang('ko')">한국어</button>
+    <button class="lbtn" id="lb-en" onclick="setLang('en')">EN</button>
+    <button class="lbtn" id="lb-zh" onclick="setLang('zh')">中文</button>
+  </div>
+  <div class="hero" style="text-align:center">
+    <div class="hero-planet">🌍</div>
+    <div id="h-title" style="font-size:22px;font-weight:900;color:var(--txt);margin-bottom:3px"></div>
+    <div id="h-sub" style="font-size:12px;color:#cbd5e1"></div>
+    <div class="pill-row">
+      <span class="pill" id="h-pill1"></span>
+      <span class="pill" id="h-pill2"></span>
+      <span class="pill" id="h-pill3"></span>
+    </div>
+  </div>
+  <div class="qtab">
+    <button class="qtab-btn on" id="qt-f" onclick="setQT('flag')">🚩 <span id="qt-f-t"></span></button>
+    <button class="qtab-btn" id="qt-l" onclick="setQT('land')">🏛️ <span id="qt-l-t"></span></button>
+  </div>
+  <div class="diff-row">
+    <button class="dbtn on" id="df-easy" onclick="setDiff('easy')">🌱 <span id="df-easy-t"></span></button>
+    <button class="dbtn" id="df-normal" onclick="setDiff('normal')">🌍 <span id="df-normal-t"></span></button>
+    <button class="dbtn" id="df-hard" onclick="setDiff('hard')">🔥 <span id="df-hard-t"></span></button>
+  </div>
+  <div class="card">
+    <div id="h-nl" style="font-size:12px;color:var(--mut);margin-bottom:7px;font-weight:500"></div>
+    <input id="hn" maxlength="12" oninput="chk()">
+  </div>
+  <div id="h-ml" style="font-size:12px;color:var(--mut);margin-bottom:8px;font-weight:500"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px">
+    <div class="mc" id="ms" onclick="startG('survival')" >
+      <div style="font-size:28px;margin-bottom:8px">❤️</div>
+      <div id="ms-t" style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:3px"></div>
+      <div id="ms-d" style="font-size:11px;color:var(--mut);margin-bottom:8px;line-height:1.4"></div>
+      <span style="font-size:10px;color:#f87171;background:#ef444418;padding:2px 8px;border-radius:20px">❤️❤️❤️</span>
+    </div>
+    <div class="mc" id="mc" onclick="startG('challenge')" >
+      <div style="font-size:28px;margin-bottom:8px">🎯</div>
+      <div id="mc-t" style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:3px"></div>
+      <div id="mc-d" style="font-size:11px;color:var(--mut);margin-bottom:8px;line-height:1.4"></div>
+      <span id="mc-b" style="font-size:10px;color:#4ade80;background:#22c55e18;padding:2px 8px;border-radius:20px"></span>
+    </div>
+    <div class="mc daily" id="md" onclick="startDaily()" >
+      <div style="font-size:30px;margin-bottom:7px">🧭</div>
+      <div id="md-t" style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:3px"></div>
+      <div id="md-d" style="font-size:11px;color:#cbd5e1;line-height:1.45"></div>
+      <span class="daily-tag" id="md-b"></span>
+    </div>
+  </div>
+  <div id="h-tip" style="font-size:11px;color:#475569;text-align:center;margin-bottom:10px"></div>
+  <button class="bs" onclick="openLB()" id="h-lb"></button>
+  <div id="hpv" style="display:none;margin-top:10px" class="card">
+    <div id="h-top" style="font-size:11px;color:var(--mut);margin-bottom:7px;font-weight:500"></div>
+    <div id="hpl"></div>
+  </div>
+</div>
+
+<!-- Game -->
+<div id="s-game" class="scr">
+  <div id="gw">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+      <div>
+        <div id="gb" style="font-size:11px;padding:2px 9px;border-radius:20px;background:#6366f115;color:#a5b4fc;font-weight:500;display:inline-block;margin-bottom:4px"></div>
+        <div id="gl" style="display:flex;gap:3px"></div>
+        <div id="gpw" style="display:none">
+          <div class="pr" style="width:120px"><div class="pf" id="gpf"></div></div>
+          <div id="gpt" style="font-size:10px;color:var(--dim);margin-top:2px"></div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div id="gsc" style="font-size:17px;font-weight:700;color:var(--acc)">0</div>
+        <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end">
+          <div id="tnum" style="font-size:13px;font-weight:700;color:#22c55e">15</div>
+          <div id="gsp" style="display:none;font-size:10px;color:#fbbf24">⚡</div>
+        </div>
+      </div>
+    </div>
+    <!-- Horizontal timer bar -->
+    <div class="tbar-wrap">
+      <div class="tbar" id="tbar"></div>
+    </div>
+    <div id="gto" style="display:none;background:#450a0a;border:1px solid #ef4444;border-radius:8px;padding:8px;text-align:center;color:#fca5a5;font-size:12px;font-weight:600;margin-bottom:8px"></div>
+    <!-- Question card -->
+    <div style="background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:18px 14px 12px;text-align:center;margin-bottom:12px">
+      <div id="qtitle" class="q-title"></div>
+      <!-- Flag mode -->
+      <div id="q-flag">
+        <div class="flag-frame"><span id="gfl" style="display:block;width:200px;height:133px;margin:0 auto;border-radius:7px;border:1px solid #475569;background-size:cover;background-position:center"></span></div>
+      </div>
+      <!-- Landmark mode -->
+      <div id="q-land" style="display:none">
+        <div class="lm-wrap">
+          <img id="gimg" class="lm-img" src="" alt="" crossorigin="anonymous"
+            onerror="this.style.display='none';document.getElementById('glm-fb').style.display='flex'">
+          <div id="glm-fb" style="display:none" class="lm-fb">
+            <div id="glm-flag" style="font-size:50px"></div>
+            <div id="glm-name" style="font-size:13px;color:var(--mut)"></div>
+          </div>
+          <div class="lm-badge" id="glm-badge"></div>
+        </div>
+      </div>
+      <div id="grg" style="margin-top:8px;font-size:11px;color:#475569"></div>
+    </div>
+    <div id="gopts"></div>
+    <div id="gfb" style="display:none;animation:fd .25s ease" class="card">
+      <div id="gfm" style="font-size:14px;font-weight:600;margin-bottom:3px"></div>
+      <div id="gfs" style="font-size:12px;color:var(--mut)"></div>
+    </div>
+    <button class="bp" id="gnx" style="display:none;margin-top:8px" onclick="nxt()"></button>
+  </div>
+</div>
+
+<!-- Results -->
+<div id="s-res" class="scr">
+  <div class="card" style="text-align:center;margin-bottom:10px">
+    <div id="rem" style="font-size:44px;margin-bottom:3px"></div>
+    <div id="rgr" style="font-size:48px;font-weight:900;margin-bottom:3px"></div>
+    <div id="rmsg" style="font-size:12px;color:var(--mut);margin-bottom:2px"></div>
+    <div id="rtitle" class="result-title"></div>
+    <div id="rnk" style="font-size:12px;color:var(--dim);margin-bottom:5px"></div>
+    <div id="rsc" style="font-size:28px;font-weight:700;color:var(--txt);margin-bottom:3px"></div>
+    <div id="rnew" style="display:none;font-size:12px;color:#fbbf24;font-weight:600;margin-bottom:5px">🎉</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:7px">
+      <div style="background:var(--bg);border-radius:7px;padding:8px">
+        <div id="rco" style="font-size:20px;font-weight:700;color:#4ade80"></div>
+        <div id="r-c" style="font-size:10px;color:var(--dim)"></div>
+      </div>
+      <div style="background:var(--bg);border-radius:7px;padding:8px">
+        <div id="rwr" style="font-size:20px;font-weight:700;color:#f87171"></div>
+        <div id="r-w" style="font-size:10px;color:var(--dim)"></div>
+      </div>
+      <div style="background:var(--bg);border-radius:7px;padding:8px">
+        <div id="rti" style="font-size:20px;font-weight:700;color:#fbbf24"></div>
+        <div id="r-t" style="font-size:10px;color:var(--dim)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
+    <button onclick="togW()" style="width:100%;padding:11px 15px;background:transparent;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+      <span id="rwl" style="font-size:13px;font-weight:500;color:#f87171"></span>
+      <span id="rwc" style="color:var(--dim)">▼</span>
+    </button>
+    <div id="rwls" style="display:none;padding:0 15px 12px;border-top:1px solid var(--brd)"></div>
+  </div>
+  <button id="rwrtry" class="bp" onclick="retryWrong()" style="display:none;margin-bottom:7px"></button>
+  <button id="rsh" class="bs" onclick="cpyR()" style="margin-bottom:7px"></button>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:7px">
+    <button class="bs" onclick="retry()" id="r-rt"></button>
+    <button class="bs" onclick="gohome()" id="r-hm"></button>
+  </div>
+  <button class="bp" onclick="openLB()" id="r-lb"></button>
+</div>
+
+<!-- Leaderboard -->
+<div id="s-lb" class="scr">
+  <div style="text-align:center;margin-bottom:12px">
+    <div id="lb-ti" style="font-size:20px;font-weight:700;color:var(--txt);margin-bottom:2px"></div>
+    <div id="lb-su" style="font-size:11px;color:var(--dim)"></div>
+  </div>
+  <div style="display:flex;background:var(--card);border-radius:9px;padding:3px;margin-bottom:11px;border:1px solid var(--brd)">
+    <button class="tab on" id="lts" onclick="slt('survival')"></button>
+    <button class="tab" id="ltc" onclick="slt('challenge')"></button>
+  </div>
+  <div id="lbl"></div>
+  <div id="lbe" style="display:none;text-align:center;padding:28px 0;color:#475569">
+    <div style="font-size:32px;margin-bottom:7px">📭</div>
+    <div id="lb-em"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+    <button class="bs" onclick="gohome()" id="lb-pl"></button>
+    <button class="bp" onclick="gohome()" id="lb-hm"></button>
+  </div>
+</div>
+
+</div>
+<button class="voicebtn" id="voicebtn" onclick="toggleVoice()">🔈</button>
+<button class="sndbtn" id="sndbtn" onclick="toggleSnd()">🔊</button>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const T = {
+  ko:{
+    title:'세계 국기 & 랜드마크 퀴즈', sub:'195개국 국기 · 25개 세계 랜드마크',
+    nick:'닉네임', nick_ph:'닉네임 입력 후 모드를 선택하세요',
+    mode:'게임 모드 선택', qt_flag:'국기 퀴즈', qt_land:'랜드마크',
+    surv:'서바이벌', surv_d:'오답 3번이면\n게임 종료',
+    chal:'챌린지', chal_df:'랜덤 30개국\n완주 도전', chal_dl:'랜덤 20개\n도전',
+    chal_bf:'🎯 30문제', chal_bl:'🎯 20문제',
+    tip:'⏱ 문제당 10초 · ⚡ 빠른 정답 +5점 보너스',
+    lb_btn:'🏅 글로벌 순위 보기', top3:'🏅 서바이벌 TOP 3',
+    timeout:'⏰ 시간 초과!', ans_ok:'✅ 정답! +10점!',
+    ans_ob:'✅ 정답! ⚡ 스피드 보너스 +5점!',
+    ans_no:'❌ 오답! 정답: ', ans_to:'⏰ 시간 초과! 정답: ',
+    game_ov:'💔 게임 종료...', nxt:'다음 문제 → (Enter)', res:'결과 보기 →',
+    gm:{S:'완벽합니다!',A:'훌륭해요!',B:'좋은 실력!',C:'조금 더 연습해봐요!',D:'더 공부해봐요!'},
+    your_r:'님의 최종 결과', new_r:'🎉 신기록!',
+    cor:'정답', wrg:'오답', tme:'시간',
+    wr_rev:'❌ 오답 리뷰', my_a:'내 답: ', rt_a:'정답: ',
+    share:'🔗 결과 공유하기', copied:'✅ 복사됨!',
+    retry:'🔄 다시 도전', home:'🏠 홈으로',
+    lb_ti:'🏅 글로벌 순위', lb_su:'공유 리더보드',
+    surv_t:'❤️ 서바이벌', chal_t:'🎯 챌린지',
+    no_rec:'기록이 없습니다', play:'🎮 게임하기',
+    daily:'오늘의 도전', daily_d:'국기와 랜드마크 10문제\n매일 바뀌는 세계여행', daily_b:'🧭 오늘 10문제',
+    pill1:'학생 모드', pill2:'실제 랜드마크 사진', pill3:'음성 문제 읽기',
+    title_S:'월드 마스터', title_A:'랜드마크 탐험가', title_B:'국기 여행자', title_C:'세계여행 입문자', title_D:'여행 준비생',
+    wrong_retry:'오답만 다시 풀기', review_hint:'복습 포인트', daily_done:'오늘의 도전 완료',
+    voice_on:'문제 음성 켜짐', voice_off:'문제 음성 꺼짐', guest:'꼬마여행자',
+    reg:{Asia:'아시아',Europe:'유럽',Africa:'아프리카',Americas:'아메리카',Oceania:'오세아니아'},
+    land_in:'이 랜드마크는 어느 나라에 있을까요?',
+    flag_in:'이 국기는 어느 나라일까요?',
+    diff_easy:'쉬움', diff_normal:'보통', diff_hard:'어려움',
+    time_easy:'15초 · 입문', time_normal:'10초 · 기본', time_hard:'7초 · 고수',
+  },
+  zh:{
+    title:'世界国旗 & 地标测验', sub:'195个国家国旗 · 25个世界地标',
+    nick:'昵称', nick_ph:'输入昵称后选择模式',
+    mode:'选择游戏模式', qt_flag:'国旗测验', qt_land:'地标测验',
+    surv:'生存模式', surv_d:'答错3次\n游戏结束',
+    chal:'挑战模式', chal_df:'挑战30个\n随机国家', chal_dl:'挑战20个\n随机地标',
+    chal_bf:'🎯 30题', chal_bl:'🎯 20题',
+    tip:'⏱ 每题10秒 · ⚡ 快速回答奖励 +5分',
+    lb_btn:'🏅 查看全球排名', top3:'🏅 生存 TOP 3',
+    timeout:'⏰ 时间到！', ans_ok:'✅ 正确！+10分！',
+    ans_ob:'✅ 正确！⚡ 速度奖励 +5分！',
+    ans_no:'❌ 错误！正确答案：', ans_to:'⏰ 超时！正确答案：',
+    game_ov:'💔 游戏结束...', nxt:'下一题 → (Enter)', res:'查看结果 →',
+    gm:{S:'完美！',A:'非常棒！',B:'不错的水平！',C:'继续练习吧！',D:'多加学习吧！'},
+    your_r:'的最终结果', new_r:'🎉 新纪录！',
+    cor:'正确', wrg:'错误', tme:'时间',
+    wr_rev:'❌ 错误回顾', my_a:'我的答案：', rt_a:'正确答案：',
+    share:'🔗 分享结果', copied:'✅ 已复制！',
+    retry:'🔄 再次挑战', home:'🏠 返回主页',
+    lb_ti:'🏅 全球排名', lb_su:'共享排行榜',
+    surv_t:'❤️ 生存', chal_t:'🎯 挑战',
+    no_rec:'暂无记录', play:'🎮 开始游戏',
+    daily:'今日挑战', daily_d:'国旗和地标10题\n每日更新的世界旅行', daily_b:'🧭 今日10题',
+    pill1:'学生模式', pill2:'真实地标照片', pill3:'语音读题',
+    title_S:'世界大师', title_A:'地标探险家', title_B:'国旗旅行者', title_C:'世界旅行入门者', title_D:'旅行准备生',
+    wrong_retry:'只练错题', review_hint:'复习重点', daily_done:'今日挑战完成',
+    voice_on:'语音开启', voice_off:'语音关闭', guest:'小小旅行家',
+    reg:{Asia:'亚洲',Europe:'欧洲',Africa:'非洲',Americas:'美洲',Oceania:'大洋洲'},
+    land_in:'这是哪个国家的地标？',
+    flag_in:'这个国旗是哪个国家的？',
+    diff_easy:'简单', diff_normal:'普通', diff_hard:'困难',
+    time_easy:'15秒 · 入门', time_normal:'10秒 · 标准', time_hard:'7秒 · 高手',
+  },
+  en:{
+    title:'World Flag & Landmark Quiz', sub:'195 flags · 25 world landmarks',
+    nick:'Nickname', nick_ph:'Enter a nickname, then choose a mode',
+    mode:'Choose game mode', qt_flag:'Flag Quiz', qt_land:'Landmarks',
+    surv:'Survival', surv_d:'3 wrong answers\nand it is over',
+    chal:'Challenge', chal_df:'Random countries\nfinish the route', chal_dl:'Random landmarks\nfinish the route',
+    chal_bf:'🎯 30 Questions', chal_bl:'🎯 20 Questions',
+    tip:'⏱ Time changes by difficulty · ⚡ Fast answer +5 bonus',
+    lb_btn:'🏅 View Rankings', top3:'🏅 Survival TOP 3',
+    timeout:'⏰ Time up!', ans_ok:'✅ Correct! +10!',
+    ans_ob:'✅ Correct! ⚡ Speed bonus +5!',
+    ans_no:'❌ Wrong! Answer: ', ans_to:'⏰ Time up! Answer: ',
+    game_ov:'💔 Game over...', nxt:'Next → (Enter)', res:'See Result →',
+    gm:{S:'Perfect!',A:'Excellent!',B:'Nice work!',C:'Keep exploring!',D:'Study a little more!'},
+    your_r:' final result', new_r:'🎉 New record!',
+    cor:'Correct', wrg:'Wrong', tme:'Time',
+    wr_rev:'❌ Wrong Review', my_a:'My answer: ', rt_a:'Answer: ',
+    share:'🔗 Share Result', copied:'✅ Copied!',
+    retry:'🔄 Retry', home:'🏠 Home',
+    lb_ti:'🏅 Rankings', lb_su:'Shared leaderboard',
+    surv_t:'❤️ Survival', chal_t:'🎯 Challenge',
+    no_rec:'No records yet', play:'🎮 Play',
+    daily:'Daily Challenge', daily_d:'10 flags and landmarks\na new route every day', daily_b:'🧭 Today’s 10',
+    pill1:'Student mode', pill2:'Real landmark photos', pill3:'Voice questions',
+    title_S:'World Master', title_A:'Landmark Explorer', title_B:'Flag Traveler', title_C:'World Trip Rookie', title_D:'Travel Trainee',
+    wrong_retry:'Retry wrong answers', review_hint:'Review tip', daily_done:'Daily challenge complete',
+    voice_on:'Voice on', voice_off:'Voice off', guest:'Little Explorer',
+    reg:{Asia:'Asia',Europe:'Europe',Africa:'Africa',Americas:'Americas',Oceania:'Oceania'},
+    land_in:'Which country is this landmark in?',
+    flag_in:'Which country does this flag belong to?',
+    diff_easy:'Easy', diff_normal:'Normal', diff_hard:'Hard',
+    time_easy:'15s · Beginner', time_normal:'10s · Standard', time_hard:'7s · Master',
+  }
+};
+
+// Chinese country names
+const ZH={af:'阿富汗',al:'阿尔巴尼亚',dz:'阿尔及利亚',ad:'安道尔',ao:'安哥拉',ag:'安提瓜和巴布达',ar:'阿根廷',am:'亚美尼亚',au:'澳大利亚',at:'奥地利',az:'阿塞拜疆',bs:'巴哈马',bh:'巴林',bd:'孟加拉国',bb:'巴巴多斯',by:'白俄罗斯',be:'比利时',bz:'伯利兹',bj:'贝宁',bt:'不丹',bo:'玻利维亚',ba:'波黑',bw:'博茨瓦纳',br:'巴西',bn:'文莱',bg:'保加利亚',bf:'布基纳法索',bi:'布隆迪',cv:'佛得角',kh:'柬埔寨',cm:'喀麦隆',ca:'加拿大',cf:'中非',td:'乍得',cl:'智利',cn:'中国',co:'哥伦比亚',km:'科摩罗',cd:'刚果民主共和国',cg:'刚果共和国',cr:'哥斯达黎加',ci:'科特迪瓦',hr:'克罗地亚',cu:'古巴',cy:'塞浦路斯',cz:'捷克',dk:'丹麦',dj:'吉布提',dm:'多米尼克',do:'多米尼加',ec:'厄瓜多尔',eg:'埃及',sv:'萨尔瓦多',gq:'赤道几内亚',er:'厄立特里亚',ee:'爱沙尼亚',sz:'斯威士兰',et:'埃塞俄比亚',fj:'斐济',fi:'芬兰',fr:'法国',ga:'加蓬',gm:'冈比亚',ge:'格鲁吉亚',de:'德国',gh:'加纳',gr:'希腊',gd:'格林纳达',gt:'危地马拉',gn:'几内亚',gw:'几内亚比绍',gy:'圭亚那',ht:'海地',hn:'洪都拉斯',hu:'匈牙利',is:'冰岛',in:'印度',id:'印度尼西亚',ir:'伊朗',iq:'伊拉克',ie:'爱尔兰',il:'以色列',it:'意大利',jm:'牙买加',jp:'日本',jo:'约旦',kz:'哈萨克斯坦',ke:'肯尼亚',ki:'基里巴斯',kp:'朝鲜',kr:'韩国',kw:'科威特',kg:'吉尔吉斯斯坦',la:'老挝',lv:'拉脱维亚',lb:'黎巴嫩',ls:'莱索托',lr:'利比里亚',ly:'利比亚',li:'列支敦士登',lt:'立陶宛',lu:'卢森堡',mg:'马达加斯加',mw:'马拉维',my:'马来西亚',mv:'马尔代夫',ml:'马里',mt:'马耳他',mh:'马绍尔群岛',mr:'毛里塔尼亚',mu:'毛里求斯',mx:'墨西哥',fm:'密克罗尼西亚',md:'摩尔多瓦',mc:'摩纳哥',mn:'蒙古',me:'黑山',ma:'摩洛哥',mz:'莫桑比克',mm:'缅甸',na:'纳米比亚',nr:'瑙鲁',np:'尼泊尔',nl:'荷兰',nz:'新西兰',ni:'尼加拉瓜',ne:'尼日尔',ng:'尼日利亚',mk:'北马其顿',no:'挪威',om:'阿曼',pk:'巴基斯坦',pw:'帕劳',pa:'巴拿马',pg:'巴布亚新几内亚',py:'巴拉圭',pe:'秘鲁',ph:'菲律宾',pl:'波兰',pt:'葡萄牙',qa:'卡塔尔',ro:'罗马尼亚',ru:'俄罗斯',rw:'卢旺达',kn:'圣基茨和尼维斯',lc:'圣卢西亚',vc:'圣文森特',ws:'萨摩亚',sm:'圣马力诺',st:'圣多美和普林西比',sa:'沙特阿拉伯',sn:'塞内加尔',rs:'塞尔维亚',sc:'塞舌尔',sl:'塞拉利昂',sg:'新加坡',sk:'斯洛伐克',si:'斯洛文尼亚',sb:'所罗门群岛',so:'索马里',za:'南非',ss:'南苏丹',es:'西班牙',lk:'斯里兰卡',sd:'苏丹',sr:'苏里南',se:'瑞典',ch:'瑞士',sy:'叙利亚',tw:'台湾',tj:'塔吉克斯坦',tz:'坦桑尼亚',th:'泰国',tl:'东帝汶',tg:'多哥',to:'汤加',tt:'特立尼达和多巴哥',tn:'突尼斯',tr:'土耳其',tm:'土库曼斯坦',tv:'图瓦卢',ug:'乌干达',ua:'乌克兰',ae:'阿联酋',gb:'英国',us:'美国',uy:'乌拉圭',uz:'乌兹别克斯坦',vu:'瓦努阿图',ve:'委内瑞拉',vn:'越南',ye:'也门',zm:'赞比亚',zw:'津巴布韦'};
+
+// Flag data [code, name_ko, region]
+const C=[['af','아프가니스탄','Asia'],['al','알바니아','Europe'],['dz','알제리','Africa'],['ad','안도라','Europe'],['ao','앙골라','Africa'],['ag','앤티가바부다','Americas'],['ar','아르헨티나','Americas'],['am','아르메니아','Asia'],['au','호주','Oceania'],['at','오스트리아','Europe'],['az','아제르바이잔','Asia'],['bs','바하마','Americas'],['bh','바레인','Asia'],['bd','방글라데시','Asia'],['bb','바베이도스','Americas'],['by','벨라루스','Europe'],['be','벨기에','Europe'],['bz','벨리즈','Americas'],['bj','베냉','Africa'],['bt','부탄','Asia'],['bo','볼리비아','Americas'],['ba','보스니아헤르체고비나','Europe'],['bw','보츠와나','Africa'],['br','브라질','Americas'],['bn','브루나이','Asia'],['bg','불가리아','Europe'],['bf','부르키나파소','Africa'],['bi','부룬디','Africa'],['cv','카보베르데','Africa'],['kh','캄보디아','Asia'],['cm','카메룬','Africa'],['ca','캐나다','Americas'],['cf','중앙아프리카공화국','Africa'],['td','차드','Africa'],['cl','칠레','Americas'],['cn','중국','Asia'],['co','콜롬비아','Americas'],['km','코모로','Africa'],['cd','콩고민주공화국','Africa'],['cg','콩고공화국','Africa'],['cr','코스타리카','Americas'],['ci','코트디부아르','Africa'],['hr','크로아티아','Europe'],['cu','쿠바','Americas'],['cy','키프로스','Asia'],['cz','체코','Europe'],['dk','덴마크','Europe'],['dj','지부티','Africa'],['dm','도미니카','Americas'],['do','도미니카공화국','Americas'],['ec','에콰도르','Americas'],['eg','이집트','Africa'],['sv','엘살바도르','Americas'],['gq','적도기니','Africa'],['er','에리트레아','Africa'],['ee','에스토니아','Europe'],['sz','에스와티니','Africa'],['et','에티오피아','Africa'],['fj','피지','Oceania'],['fi','핀란드','Europe'],['fr','프랑스','Europe'],['ga','가봉','Africa'],['gm','감비아','Africa'],['ge','조지아','Asia'],['de','독일','Europe'],['gh','가나','Africa'],['gr','그리스','Europe'],['gd','그레나다','Americas'],['gt','과테말라','Americas'],['gn','기니','Africa'],['gw','기니비사우','Africa'],['gy','가이아나','Americas'],['ht','아이티','Americas'],['hn','온두라스','Americas'],['hu','헝가리','Europe'],['is','아이슬란드','Europe'],['in','인도','Asia'],['id','인도네시아','Asia'],['ir','이란','Asia'],['iq','이라크','Asia'],['ie','아일랜드','Europe'],['il','이스라엘','Asia'],['it','이탈리아','Europe'],['jm','자메이카','Americas'],['jp','일본','Asia'],['jo','요르단','Asia'],['kz','카자흐스탄','Asia'],['ke','케냐','Africa'],['ki','키리바시','Oceania'],['kp','북한','Asia'],['kr','대한민국','Asia'],['kw','쿠웨이트','Asia'],['kg','키르기스스탄','Asia'],['la','라오스','Asia'],['lv','라트비아','Europe'],['lb','레바논','Asia'],['ls','레소토','Africa'],['lr','라이베리아','Africa'],['ly','리비아','Africa'],['li','리히텐슈타인','Europe'],['lt','리투아니아','Europe'],['lu','룩셈부르크','Europe'],['mg','마다가스카르','Africa'],['mw','말라위','Africa'],['my','말레이시아','Asia'],['mv','몰디브','Asia'],['ml','말리','Africa'],['mt','몰타','Europe'],['mh','마셜제도','Oceania'],['mr','모리타니아','Africa'],['mu','모리셔스','Africa'],['mx','멕시코','Americas'],['fm','미크로네시아','Oceania'],['md','몰도바','Europe'],['mc','모나코','Europe'],['mn','몽골','Asia'],['me','몬테네그로','Europe'],['ma','모로코','Africa'],['mz','모잠비크','Africa'],['mm','미얀마','Asia'],['na','나미비아','Africa'],['nr','나우루','Oceania'],['np','네팔','Asia'],['nl','네덜란드','Europe'],['nz','뉴질랜드','Oceania'],['ni','니카라과','Americas'],['ne','니제르','Africa'],['ng','나이지리아','Africa'],['mk','북마케도니아','Europe'],['no','노르웨이','Europe'],['om','오만','Asia'],['pk','파키스탄','Asia'],['pw','팔라우','Oceania'],['pa','파나마','Americas'],['pg','파푸아뉴기니','Oceania'],['py','파라과이','Americas'],['pe','페루','Americas'],['ph','필리핀','Asia'],['pl','폴란드','Europe'],['pt','포르투갈','Europe'],['qa','카타르','Asia'],['ro','루마니아','Europe'],['ru','러시아','Europe'],['rw','르완다','Africa'],['kn','세인트키츠네비스','Americas'],['lc','세인트루시아','Americas'],['vc','세인트빈센트','Americas'],['ws','사모아','Oceania'],['sm','산마리노','Europe'],['st','상투메프린시페','Africa'],['sa','사우디아라비아','Asia'],['sn','세네갈','Africa'],['rs','세르비아','Europe'],['sc','세이셸','Africa'],['sl','시에라리온','Africa'],['sg','싱가포르','Asia'],['sk','슬로바키아','Europe'],['si','슬로베니아','Europe'],['sb','솔로몬제도','Oceania'],['so','소말리아','Africa'],['za','남아프리카공화국','Africa'],['ss','남수단','Africa'],['es','스페인','Europe'],['lk','스리랑카','Asia'],['sd','수단','Africa'],['sr','수리남','Americas'],['se','스웨덴','Europe'],['ch','스위스','Europe'],['sy','시리아','Asia'],['tw','대만','Asia'],['tj','타지키스탄','Asia'],['tz','탄자니아','Africa'],['th','태국','Asia'],['tl','동티모르','Asia'],['tg','토고','Africa'],['to','통가','Oceania'],['tt','트리니다드토바고','Americas'],['tn','튀니지','Africa'],['tr','터키','Asia'],['tm','투르크메니스탄','Asia'],['tv','투발루','Oceania'],['ug','우간다','Africa'],['ua','우크라이나','Europe'],['ae','아랍에미리트','Asia'],['gb','영국','Europe'],['us','미국','Americas'],['uy','우루과이','Americas'],['uz','우즈베키스탄','Asia'],['vu','바누아투','Oceania'],['ve','베네수엘라','Americas'],['vn','베트남','Asia'],['ye','예멘','Asia'],['zm','잠비아','Africa'],['zw','짐바브웨','Africa']];
+
+// Landmark data [code, ko, zh, city_ko, city_zh, img_url]
+const LM=[
+  {c:'fr',ko:'에펠탑',zh:'埃菲尔铁塔',ck:'파리',cz:'巴黎',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_eiffel_at_sunrise_from_the_trocadero.jpg/480px-Tour_eiffel_at_sunrise_from_the_trocadero.jpg'},
+  {c:'cn',ko:'만리장성',zh:'长城',ck:'베이징',cz:'北京',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/The_Great_Wall_of_China_at_Jinshanling-edit.jpg/480px-The_Great_Wall_of_China_at_Jinshanling-edit.jpg'},
+  {c:'jp',ko:'후지산',zh:'富士山',ck:'시즈오카',cz:'静冈',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Mount_Fuji_from_%C5%8Cwakudani.jpg/480px-Mount_Fuji_from_%C5%8Cwakudani.jpg'},
+  {c:'us',ko:'자유의 여신상',zh:'自由女神像',ck:'뉴욕',cz:'纽约',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Statue_of_Liberty_7.jpg/480px-Statue_of_Liberty_7.jpg'},
+  {c:'gb',ko:'빅벤',zh:'大本钟',ck:'런던',cz:'伦敦',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007.jpg/480px-Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007.jpg'},
+  {c:'it',ko:'콜로세움',zh:'罗马斗兽场',ck:'로마',cz:'罗马',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/480px-Colosseo_2020.jpg'},
+  {c:'in',ko:'타지마할',zh:'泰姬陵',ck:'아그라',cz:'阿格拉',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Taj_Mahal_%28Edited%29.jpeg/480px-Taj_Mahal_%28Edited%29.jpeg'},
+  {c:'br',ko:'예수상',zh:'救世基督像',ck:'리우',cz:'里约',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Christ_the_Redeemer_-_Cristo_Redentor.jpg/480px-Christ_the_Redeemer_-_Cristo_Redentor.jpg'},
+  {c:'eg',ko:'피라미드',zh:'金字塔',ck:'기자',cz:'吉萨',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/All_Gizah_Pyramids.jpg/480px-All_Gizah_Pyramids.jpg'},
+  {c:'au',ko:'시드니 오페라하우스',zh:'悉尼歌剧院',ck:'시드니',cz:'悉尼',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Sydney_Australia._(21339175489).jpg/480px-Sydney_Australia._(21339175489).jpg'},
+  {c:'de',ko:'브란덴부르크 문',zh:'勃兰登堡门',ck:'베를린',cz:'柏林',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Brandenburger_Tor_abends.jpg/480px-Brandenburger_Tor_abends.jpg'},
+  {c:'es',ko:'사그라다 파밀리아',zh:'圣家堂',ck:'바르셀로나',cz:'巴塞罗那',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Sagrada_Familia_01.jpg/480px-Sagrada_Familia_01.jpg'},
+  {c:'gr',ko:'파르테논 신전',zh:'帕特农神庙',ck:'아테네',cz:'雅典',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/The_Parthenon_in_Athens.jpg/480px-The_Parthenon_in_Athens.jpg'},
+  {c:'ru',ko:'성 바실리 성당',zh:'圣瓦西里大教堂',ck:'모스크바',cz:'莫斯科',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Saint_Basil%27s_Cathedral_and_Red_Square.jpg/480px-Saint_Basil%27s_Cathedral_and_Red_Square.jpg'},
+  {c:'tr',ko:'아야 소피아',zh:'圣索菲亚大教堂',ck:'이스탄불',cz:'伊斯坦布尔',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Hagia_Sophia_Istanbul_2014_2.jpg/480px-Hagia_Sophia_Istanbul_2014_2.jpg'},
+  {c:'ae',ko:'버즈 칼리파',zh:'哈利法塔',ck:'두바이',cz:'迪拜',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Burj_Khalifa_-_Sheikh_Mohammed_bin_Rashid_Blvd-_%28Ank_Kumar%2C_Infosys%29_07.jpg/480px-Burj_Khalifa_-_Sheikh_Mohammed_bin_Rashid_Blvd-_%28Ank_Kumar%2C_Infosys%29_07.jpg'},
+  {c:'pe',ko:'마추픽추',zh:'马丘比丘',ck:'쿠스코',cz:'库斯科',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Machu_Picchu%2C_Peru.jpg/480px-Machu_Picchu%2C_Peru.jpg'},
+  {c:'mx',ko:'치첸이사',zh:'奇琴伊察',ck:'유카탄',cz:'尤卡坦',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/ChichenItza.jpg/480px-ChichenItza.jpg'},
+  {c:'kh',ko:'앙코르 와트',zh:'吴哥窟',ck:'시엠레아프',cz:'暹粒',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Angkor_Wat_temple_reflection_in_the_lake.jpg/480px-Angkor_Wat_temple_reflection_in_the_lake.jpg'},
+  {c:'jo',ko:'페트라',zh:'佩特拉',ck:'와디무사',cz:'瓦迪穆萨',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Petra_Jordan_BW_21.JPG/480px-Petra_Jordan_BW_21.JPG'},
+  {c:'kr',ko:'경복궁',zh:'景福宫',ck:'서울',cz:'首尔',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Gyeongbokgung%2C_Seoul%2C_Korea.jpg/480px-Gyeongbokgung%2C_Seoul%2C_Korea.jpg'},
+  {c:'sg',ko:'마리나 베이 샌즈',zh:'滨海湾金沙',ck:'싱가포르',cz:'新加坡',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Marina_Bay_Sands_in_the_evening_-_20101120.jpg/480px-Marina_Bay_Sands_in_the_evening_-_20101120.jpg'},
+  {c:'nl',ko:'잔세스칸스 풍차',zh:'风车村',ck:'잔담',cz:'赞丹',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Zaanse_Schans_Windmills_Zaandam_%288692115135%29.jpg/480px-Zaanse_Schans_Windmills_Zaandam_%288692115135%29.jpg'},
+  {c:'cz',ko:'프라하 구시가',zh:'布拉格老城',ck:'프라하',cz:'布拉格',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Prague_in_the_morning.jpg/480px-Prague_in_the_morning.jpg'},
+  {c:'id',ko:'보로부두르',zh:'婆罗浮屠',ck:'욕야카르타',cz:'日惹',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Borobudur-Nothwest-view.jpg/480px-Borobudur-Nothwest-view.jpg'},
+];
+
+const GI={S:{e:'🏆',c:'#f59e0b'},A:{e:'🥇',c:'#c0c0c0'},B:{e:'🥈',c:'#60a5fa'},C:{e:'🥉',c:'#4ade80'},D:{e:'📚',c:'#64748b'}};
+const LS=['A','B','C','D'];
+const EASY_CODES='kr jp cn us fr gb it de es au ca br in eg th vn sg nl ch se no fi dk be at gr tr ae mx'.split(' ');
+const NORMAL_CODES='kr jp cn us fr gb it de es au ca br in eg th vn sg nl ch se no fi dk be at gr tr ae mx id my ph ru nz ie pt pl cz hu ro ua ar cl pe co za ma sa il jo kh la tw hk mn np lk pk bd qa kw om'.split(' ');
+const LM_EN={fr:['Eiffel Tower','Paris'],cn:['Great Wall','Beijing'],jp:['Mount Fuji','Shizuoka'],us:['Statue of Liberty','New York'],gb:['Big Ben','London'],it:['Colosseum','Rome'],in:['Taj Mahal','Agra'],br:['Christ the Redeemer','Rio de Janeiro'],eg:['Pyramids','Giza'],au:['Sydney Opera House','Sydney'],de:['Brandenburg Gate','Berlin'],es:['Sagrada Familia','Barcelona'],gr:['Parthenon','Athens'],ru:['Saint Basil Cathedral','Moscow'],tr:['Hagia Sophia','Istanbul'],ae:['Burj Khalifa','Dubai'],pe:['Machu Picchu','Cusco'],mx:['Chichen Itza','Yucatán'],kh:['Angkor Wat','Siem Reap'],jo:['Petra','Wadi Musa'],kr:['Gyeongbokgung Palace','Seoul'],sg:['Marina Bay Sands','Singapore'],nl:['Zaanse Schans Windmills','Zaandam'],cz:['Old Town Prague','Prague'],id:['Borobudur','Yogyakarta']};
+function activeCodes(){return difficulty==='easy'?EASY_CODES:(difficulty==='normal'?NORMAL_CODES:C.map(x=>x[0]));}
+function activeCountries(){const set=new Set(activeCodes());return C.filter(x=>set.has(x[0]));}
+function challengeTotal(){if(qtype==='flag')return difficulty==='easy'?15:(difficulty==='normal'?25:30);return difficulty==='easy'?10:(difficulty==='normal'?15:20);}
+function maxTime(){return difficulty==='easy'?15:(difficulty==='normal'?10:7);}
+function scoreWord(){return lang==='zh'?'分':(lang==='en'?' pts':'점');}
+
+// ============================================================
+// STATE
+// ============================================================
+let lang='ko', qtype='flag', difficulty='easy';
+let mode,nick,qs,qi,sc,lv,as,ch,ti,tl,t0,bS=0,bC=0,ltab='survival',wop=false,voiceOn=false,autoNextTimer=null;
+
+// ============================================================
+// BGM
+// ============================================================
+const BGM=(()=>{
+  let ctx=null,playing=false,nodes=[],loopTO=null,trackIdx=0;
+  const TRACKS=[
+    // Track 1: C major pentatonic - upbeat world explorer
+    [523,659,784,1047,784,659,523,392,523,659,784,659,784,1047,784,523],
+    // Track 2: G pentatonic - playful discovery
+    [392,494,587,784,587,494,392,330,392,494,587,494,392,330,294,330],
+    // Track 3: D minor - mysterious landmarks
+    [294,349,440,523,440,349,294,262,294,349,440,349,294,220,262,294]
+  ];
+  const ND=0.38;
+  function mkNote(f,st,dur,vol=0.07){
+    if(!ctx)return;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.001,st);
+    g.gain.linearRampToValueAtTime(vol,st+0.04);
+    g.gain.exponentialRampToValueAtTime(0.001,st+dur*0.88);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(st); o.stop(st+dur);
+    nodes.push(o);
+  }
+  function playLoop(){
+    if(!playing||!ctx)return;
+    const mel=TRACKS[trackIdx%TRACKS.length];
+    const now=ctx.currentTime+0.1;
+    mel.forEach((f,i)=>mkNote(f,now+i*ND,ND*0.85));
+    // Bass notes every 4 beats
+    mel.filter((_,i)=>i%4===0).forEach((f,i)=>{
+      mkNote(f/2,now+i*ND*4,ND*3,0.04);
+    });
+    const total=mel.length*ND+0.6;
+    loopTO=setTimeout(()=>{if(playing){trackIdx++;playLoop();}},total*1000);
+  }
+  return{
+    init(){
+      if(ctx){if(ctx.state==='suspended')ctx.resume();return true;}
+      try{ctx=new(window.AudioContext||window.webkitAudioContext)();return true;}
+      catch(e){return false;}
+    },
+    start(){if(!this.init()||playing)return;playing=true;playLoop();},
+    stop(){playing=false;clearTimeout(loopTO);nodes.forEach(n=>{try{n.stop(0);}catch(e){}});nodes=[];},
+    toggle(){if(playing){this.stop();return false;}this.start();return true;},
+    isPlaying(){return playing;},
+    sfx(t){
+      if(!ctx)return;
+      const now=ctx.currentTime;
+      if(t==='ok')[523,659,784].forEach((f,i)=>mkNote(f,now+i*0.1,0.18,0.14));
+      else if(t==='no')[440,330].forEach((f,i)=>mkNote(f,now+i*0.12,0.16,0.1));
+      else if(t==='tick')mkNote(1200,now,0.05,0.06);
+    }
+  };
+})();
+
+function toggleSnd(){
+  const on=BGM.toggle();
+  document.getElementById('sndbtn').textContent=on?'🔊':'🔇';
+}
+
+// ============================================================
+// VOICE READ-ALOUD (Web Speech API)
+// ============================================================
+function langVoice(){return lang==='zh'?'zh-CN':(lang==='en'?'en-US':'ko-KR');}
+function questionText(q){return q.type==='flag'?t('flag_in'):t('land_in');}
+function toggleVoice(){
+  voiceOn=!voiceOn;
+  try{localStorage.setItem('wq_voice',voiceOn?'1':'0');}catch(e){}
+  const b=document.getElementById('voicebtn');
+  if(b){b.className='voicebtn'+(voiceOn?' on':'');b.textContent=voiceOn?'🔊':'🔈';b.title=voiceOn?t('voice_on'):t('voice_off');}
+  if(voiceOn&&qs&&qs[qi])speakQ(qs[qi]);
+  if(!voiceOn&&window.speechSynthesis)window.speechSynthesis.cancel();
+}
+function speakQ(q){
+  if(!voiceOn||!('speechSynthesis' in window)||!q)return;
+  try{
+    window.speechSynthesis.cancel();
+    const msg=new SpeechSynthesisUtterance(questionText(q));
+    msg.lang=langVoice(); msg.rate=0.92; msg.pitch=1.05; msg.volume=0.92;
+    window.speechSynthesis.speak(msg);
+  }catch(e){}
+}
+function initVoice(){
+  try{voiceOn=localStorage.getItem('wq_voice')==='1';}catch(e){voiceOn=false;}
+  const b=document.getElementById('voicebtn');
+  if(b){b.className='voicebtn'+(voiceOn?' on':'');b.textContent=voiceOn?'🔊':'🔈';b.title=voiceOn?t('voice_on'):t('voice_off');}
+}
+
+// ============================================================
+// LANGUAGE
+// ============================================================
+function t(k){return(T[lang]&&T[lang][k])||T.ko[k]||k;}
+function tr(k){return(T[lang]&&T[lang].reg&&T[lang].reg[k])||k;}
+function cname(code){
+  const row=C.find(c=>c[0]===code);
+  if(lang==='zh')return ZH[code]||(row?row[1]:code);
+  if(lang==='en'){
+    try{return new Intl.DisplayNames(['en'],{type:'region'}).of(code.toUpperCase()) || (row?row[1]:code);}
+    catch(e){return row?row[1]:code;}
+  }
+  return row?row[1]:code;
+}
+function lmName(lm){return lang==='zh'?lm.zh:(lang==='en'?(LM_EN[lm.c]?.[0]||lm.ko):lm.ko);}
+function lmCity(lm){return lang==='zh'?lm.cz:(lang==='en'?(LM_EN[lm.c]?.[1]||lm.ck):lm.ck);}
+
+function setLang(l){
+  lang=l;
+  document.getElementById('lb-ko').className='lbtn'+(l==='ko'?' on':'');
+  document.getElementById('lb-en').className='lbtn'+(l==='en'?' on':'');
+  document.getElementById('lb-zh').className='lbtn'+(l==='zh'?' on':'');
+  renderHome();
+}
+function setDiff(d){
+  difficulty=d;
+  ['easy','normal','hard'].forEach(x=>{document.getElementById('df-'+x).className='dbtn'+(x===d?' on':'');});
+  renderHome();
+}
+function setQT(qt){
+  qtype=qt;
+  document.getElementById('qt-f').className='qtab-btn'+(qt==='flag'?' on':'');
+  document.getElementById('qt-l').className='qtab-btn'+(qt==='land'?' on':'');
+  renderHome();
+}
+
+function renderHome(){
+  document.getElementById('h-title').textContent=t('title');
+  document.getElementById('h-sub').textContent=t('sub');
+  document.getElementById('h-pill1').textContent=t('pill1');
+  document.getElementById('h-pill2').textContent=t('pill2');
+  document.getElementById('h-pill3').textContent=t('pill3');
+  document.getElementById('qt-f-t').textContent=t('qt_flag');
+  document.getElementById('qt-l-t').textContent=t('qt_land');
+  document.getElementById('df-easy-t').textContent=t('diff_easy');
+  document.getElementById('df-normal-t').textContent=t('diff_normal');
+  document.getElementById('df-hard-t').textContent=t('diff_hard');
+  document.getElementById('h-nl').textContent=t('nick');
+  document.getElementById('hn').placeholder=t('nick_ph');
+  document.getElementById('h-ml').textContent=t('mode');
+  document.getElementById('ms-t').textContent=t('surv');
+  document.getElementById('ms-d').textContent=t('surv_d').replace('\\n','\n');
+  document.getElementById('mc-t').textContent=t('chal');
+  document.getElementById('mc-d').textContent=(qtype==='flag'?t('chal_df'):t('chal_dl')).replace('\\n','\n');
+  document.getElementById('mc-b').textContent=qtype==='flag'?t('chal_bf'):t('chal_bl');
+  document.getElementById('md-t').textContent=t('daily');
+  document.getElementById('md-d').innerHTML=t('daily_d').replace(/\\n/g,'<br>');
+  document.getElementById('md-b').textContent=t('daily_b');
+  document.getElementById('h-tip').textContent=t('tip')+' · '+t('time_'+difficulty);
+  document.getElementById('h-lb').textContent=t('lb_btn');
+  document.getElementById('h-top').textContent=t('top3');
+  // LB tabs
+  document.getElementById('lts').textContent=t('surv_t');
+  document.getElementById('ltc').textContent=t('chal_t');
+  document.getElementById('lb-ti').textContent=t('lb_ti');
+  document.getElementById('lb-su').textContent=t('lb_su');
+  document.getElementById('lb-em').textContent=t('no_rec');
+  document.getElementById('lb-pl').textContent=t('play');
+  document.getElementById('lb-hm').textContent=t('home');
+  // Results
+  document.getElementById('r-c').textContent=t('cor');
+  document.getElementById('r-w').textContent=t('wrg');
+  document.getElementById('r-t').textContent=t('tme');
+  document.getElementById('rsh').textContent=t('share');
+  document.getElementById('r-rt').textContent=t('retry');
+  document.getElementById('r-hm').textContent=t('home');
+  document.getElementById('r-lb').textContent=t('lb_ti');
+  document.getElementById('rnew').textContent=t('new_r');
+  document.getElementById('rwrtry').textContent=t('wrong_retry');
+  initVoice();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function sh(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function todayKey(){const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
+function seeded(seed){let h=2166136261>>>0;for(let i=0;i<seed.length;i++){h^=seed.charCodeAt(i);h=Math.imul(h,16777619);}return()=>{h+=0x6D2B79F5;let t=h;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+function shSeed(a,seed){let b=[...a],rnd=seeded(seed);for(let i=b.length-1;i>0;i--){let j=Math.floor(rnd()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function gameTotal(){return (mode==='daily'||mode==='review')?qs.length:challengeTotal();}
+function autoNick(){return t('guest')+Math.floor(10+Math.random()*90);}
+
+function goS(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function gohome(){stpT();stpAuto();document.onkeydown=null;goS('s-home');}
+function fmt(s){return Math.floor(s/60)+'분 '+String(s%60).padStart(2,'0')+'초';}
+
+function chk(){
+  ['ms','mc','md'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.style.opacity='1';
+    el.style.pointerEvents='auto';
+  });
+}
+
+// ============================================================
+// TIMER (horizontal bar, 10 sec)
+// ============================================================
+function stpT(){clearInterval(ti);ti=null;}
+function stpAuto(){clearTimeout(autoNextTimer);autoNextTimer=null;}
+
+function strT(){
+  stpT(); tl=maxTime(); updT();
+  ti=setInterval(()=>{
+    tl--;
+    updT();
+    if(tl<=0){stpT();onTO();}
+    else if(tl<=3)BGM.sfx('tick');
+  },1000);
+}
+
+function updT(){
+  const bar=document.getElementById('tbar');
+  const num=document.getElementById('tnum');
+  const limit=maxTime();
+  const elapsed=limit-tl;
+  const pct=(elapsed/limit)*100;
+  const col=tl<=3?'#ef4444':tl<=6?'#f59e0b':'#22c55e';
+  if(bar){bar.style.width=pct+'%';bar.style.background=col;}
+  if(num){num.textContent=tl;num.style.color=col;}
+  const sp=document.getElementById('gsp');
+  if(sp)sp.style.display=(tl>Math.ceil(maxTime()*0.7)&&ch===null)?'':'none';
+}
+
+// ============================================================
+// PREP QUESTIONS
+// ============================================================
+function prep(m){
+  // Flag quiz: difficulty controls the country pool. Easy keeps the first play friendly.
+  const base=activeCountries();
+  const pool=m==='challenge'?sh(base).slice(0,challengeTotal()):sh([...base]);
+  return pool.map(c=>{
+    const sm=base.filter(x=>x[2]===c[2]&&x[0]!==c[0]);
+    const df=base.filter(x=>x[2]!==c[2]&&x[0]!==c[0]);
+    let wr=sh(sm).slice(0,3);
+    if(wr.length<3)wr=[...wr,...sh(df).slice(0,3-wr.length)];
+    const opts=sh([c,...wr.slice(0,3)]);
+    return{type:'flag',code:c[0],name:c[1],reg:c[2],opts,cor:opts.findIndex(x=>x[0]===c[0])};
+  });
+}
+
+function prepLand(m){
+  // Landmark quiz: same difficulty idea, but filtered by countries with landmarks.
+  const ac=new Set(activeCodes());
+  let base=LM.filter(l=>ac.has(l.c));
+  if(base.length<4)base=[...LM];
+  const pool=m==='challenge'?sh([...base]).slice(0,challengeTotal()):sh([...base]);
+  return pool.map(lm=>{
+    const country=C.find(c=>c[0]===lm.c);
+    const region=country?country[2]:'Asia';
+    let wrongLM=base.filter(l=>l.c!==lm.c&&C.find(c=>c[0]===l.c&&c[2]===region));
+    if(wrongLM.length<3)wrongLM=[...wrongLM,...base.filter(l=>l.c!==lm.c&&!wrongLM.includes(l))];
+    if(wrongLM.length<3)wrongLM=[...wrongLM,...LM.filter(l=>l.c!==lm.c&&!wrongLM.includes(l))];
+    const wrongs=sh(wrongLM).slice(0,3).map(l=>l.c);
+    const opts=sh([lm.c,...wrongs]);
+    return{type:'land',lm,code:lm.c,name:country?country[1]:'',reg:region,opts,cor:opts.indexOf(lm.c)};
+  });
+}
+
+
+function prepDaily(){
+  const seed=todayKey()+'_'+difficulty;
+  const flags=shSeed(prep('challenge'),seed+'_flags').slice(0,6);
+  const lands=shSeed(prepLand('challenge'),seed+'_lands').slice(0,4);
+  return shSeed([...flags,...lands],seed+'_mix');
+}
+
+function grd(pct){
+  if(mode==='challenge'||mode==='daily'||mode==='review'){if(pct>=90)return'S';if(pct>=75)return'A';if(pct>=60)return'B';if(pct>=45)return'C';return'D';}
+  if(sc>=200)return'S';if(sc>=150)return'A';if(sc>=100)return'B';if(sc>=50)return'C';return'D';
+}
+
+// ============================================================
+// GAME START
+// ============================================================
+function startG(m){
+  let v=document.getElementById('hn').value.trim();
+  if(!v){v=autoNick();document.getElementById('hn').value=v;chk();}
+  nick=v; mode=m;
+  qs=m==='daily'?prepDaily():(qtype==='flag'?prep(m):prepLand(m));
+  qi=0; sc=0; lv=3; as=[]; ch=null; wop=false; t0=Date.now();
+  let label='';
+  if(m==='survival')label=t('surv_t');
+  else if(m==='daily')label=t('daily_b');
+  else label=qtype==='flag'?t('chal_bf'):t('chal_bl');
+  document.getElementById('gb').textContent=label+' · '+t('diff_'+difficulty);
+  const gl=document.getElementById('gl'),gp=document.getElementById('gpw');
+  if(m==='survival'){gl.style.display='flex';gp.style.display='none';updL();}
+  else{gl.style.display='none';gp.style.display='block';}
+  goS('s-game'); rnQ(); document.onkeydown=kbH;
+  if(!BGM.isPlaying()){BGM.start();document.getElementById('sndbtn').textContent='🔊';}
+}
+function startDaily(){startG('daily');}
+
+function updL(){
+  document.getElementById('gl').innerHTML=[...Array(3)].map((_,i)=>`<span class="ht${i>=lv?' lost':''}">❤️</span>`).join('');
+}
+
+// ============================================================
+// RENDER QUESTION
+// ============================================================
+function rnQ(){
+  stpT(); stpAuto(); ch=null;
+  const q=qs[qi];
+  document.getElementById('gsc').textContent=sc+scoreWord();
+  document.getElementById('gto').style.display='none';
+  document.getElementById('gfb').style.display='none';
+  document.getElementById('gnx').style.display='none';
+  // Reset timer bar
+  const bar=document.getElementById('tbar');
+  if(bar){bar.style.transition='none';bar.style.width='0%';setTimeout(()=>bar.style.transition='width 1s linear,background .5s',50);}
+
+  if(mode==='challenge'||mode==='daily'||mode==='review'){
+    const total=gameTotal();
+    document.getElementById('gpf').style.width=((qi/total)*100)+'%';
+    document.getElementById('gpt').textContent=(qi+1)+' / '+total;
+  }
+
+  if(q.type==='flag'){
+    document.getElementById('qtitle').textContent=t('flag_in');
+    document.getElementById('q-flag').style.display='block';
+    document.getElementById('q-land').style.display='none';
+    const fl=document.getElementById('gfl');
+    fl.className='fi fi-'+q.code;
+    fl.style.cssText='display:block;width:200px;height:133px;margin:0 auto;border-radius:5px;border:1px solid #475569;background-size:cover;background-position:center';
+    document.getElementById('grg').textContent=tr(q.reg)+' · '+t('time_'+difficulty);
+  } else {
+    document.getElementById('qtitle').textContent=t('land_in');
+    document.getElementById('q-flag').style.display='none';
+    document.getElementById('q-land').style.display='block';
+    const img=document.getElementById('gimg');
+    const fb=document.getElementById('glm-fb');
+    img.style.display='block'; fb.style.display='none';
+    img.src=q.lm.img;
+    const lmLabel=lmName(q.lm);
+    const cityName=lmCity(q.lm);
+    document.getElementById('glm-badge').textContent='? · '+cityName;
+    document.getElementById('glm-flag').textContent='🏛️';
+    document.getElementById('glm-name').textContent=lmLabel;
+    document.getElementById('grg').textContent=t('time_'+difficulty);
+  }
+
+  showOpts(q,-1,-1,false);
+  speakQ(q);
+  strT();
+}
+
+// ============================================================
+// OPTIONS
+// ============================================================
+function showOpts(q,correctIdx,chosenIdx,revealed){
+  const w=document.getElementById('gopts');
+  w.innerHTML='';
+  q.opts.forEach((c,i)=>{
+    const code=q.type==='flag'?c[0]:c;
+    const name=q.type==='flag'?cname(c[0]):cname(c);
+    const btn=document.createElement('button');
+    btn.className='ob';
+    if(revealed&&correctIdx>=0){
+      if(i===correctIdx)btn.classList.add('ok');
+      else if(i===chosenIdx)btn.classList.add('no');
+      else btn.classList.add('dm');
+      btn.setAttribute('disabled','true');
+    }
+    // Label badge
+    const lb=document.createElement('span');
+    lb.className='ol'; lb.textContent=LS[i];
+    // Name only: no mini flags in choices, otherwise flag quiz becomes too easy.
+    const ns=document.createElement('span');
+    ns.style.flex='1'; ns.textContent=name||code;
+    // KB hint
+    const kb=document.createElement('span');
+    kb.style.cssText='font-size:10px;color:#475569'; kb.textContent=i+1;
+
+    btn.append(lb,ns,kb);
+    if(!revealed||correctIdx<0)btn.onclick=()=>pick(i);
+    w.appendChild(btn);
+  });
+}
+
+// ============================================================
+// PICK / FEEDBACK
+// ============================================================
+function pick(i){
+  if(ch!==null)return;
+  stpT(); ch=i;
+  const q=qs[qi];
+  const ok=i===q.cor;
+  const bonus=ok&&tl>Math.ceil(maxTime()*0.7);
+  const gained=ok?10+(bonus?5:0):0;
+  if(ok){sc+=gained;shFl(gained);BGM.sfx('ok');}
+  else{if(mode==='challenge')sc=Math.max(0,sc-2);BGM.sfx('no');}
+  as.push({q,ch:i,ok,score:gained});
+  showOpts(q,q.cor,i,true);
+  if(!ok&&mode==='survival'){lv--;updL();if(lv<=0){shFB(false,false,q);setTimeout(()=>endG(),1600);return;}}
+  shFB(ok,false,q,bonus);
+}
+
+function shFl(pts){
+  const el=document.createElement('div');
+  el.className='fl';
+  el.style.color=pts>10?'#fbbf24':'#4ade80';
+  el.textContent='+'+pts+scoreWord()+(pts>10?' ⚡':'');
+  document.getElementById('gw').appendChild(el);
+  setTimeout(()=>el.remove(),1300);
+}
+
+function shFB(ok,isTO,q,bonus){
+  const fb=document.getElementById('gfb'),fm=document.getElementById('gfm'),fs=document.getElementById('gfs');
+  const qname=q.type==='flag'?cname(q.code):lmName(q.lm);
+  const country=q.type==='flag'?qname:cname(q.code);
+  fm.style.color=ok?'#4ade80':isTO?'#fca5a5':'#f87171';
+  if(ok) fm.textContent=bonus?t('ans_ob'):t('ans_ok');
+  else if(isTO) fm.textContent=t('ans_to')+(q.type==='flag'?country:qname+' ('+country+')');
+  else fm.textContent=t('ans_no')+(q.type==='flag'?country:qname+' ('+country+')');
+  // Show landmark name on reveal
+  if(q.type==='land'){
+    const badge=document.getElementById('glm-badge');
+    if(badge){const ln=lmName(q.lm);const cn=lmCity(q.lm);badge.textContent=ln+' · '+cn;}
+  }
+  fs.textContent=mode==='survival'&&lv<=0?t('game_ov'):'';
+  fb.style.display='block';
+  const nb=document.getElementById('gnx');
+  nb.style.display='block';
+  const total=gameTotal();
+  const hasNext=(mode==='survival'&&lv>0)||((mode==='challenge'||mode==='daily'||mode==='review')&&qi+1<total);
+  nb.textContent=hasNext?(lang==='ko'?'자동으로 다음 문제로 이동합니다':(lang==='zh'?'自动进入下一题':'Moving to next question')):t('res');
+  const delay=ok?1100:1800;
+  stpAuto();
+  autoNextTimer=setTimeout(()=>{
+    autoNextTimer=null;
+    if(document.getElementById('s-game').classList.contains('on'))nxt();
+  }, hasNext?delay:2000);
+}
+
+function onTO(){
+  if(ch!==null)return;ch=-1;
+  const q=qs[qi];
+  as.push({q,ch:-1,ok:false,score:0});
+  if(mode==='survival'){lv--;updL();}
+  document.getElementById('gto').textContent=t('timeout');
+  document.getElementById('gto').style.display='block';
+  showOpts(q,q.cor,-1,true);
+  if(mode==='survival'&&lv<=0){setTimeout(()=>endG(),1400);return;}
+  shFB(false,true,q,false);
+}
+
+function nxt(){
+  stpAuto();
+  const total=gameTotal();
+  if(mode==='survival'&&lv<=0){endG();return;}
+  if((mode==='challenge'||mode==='daily'||mode==='review')&&qi+1>=total){endG();return;}
+  qi++;
+  if(mode==='survival'&&qi>=qs.length)qs=[...qs,...(qtype==='flag'?prep('survival'):prepLand('survival'))];
+  rnQ();
+}
+
+function kbH(e){
+  if(!document.getElementById('s-game').classList.contains('on'))return;
+  if(['1','2','3','4'].includes(e.key)&&ch===null)pick(parseInt(e.key)-1);
+  if(e.key==='Enter'&&ch!==null)nxt();
+}
+
+// ============================================================
+// END / RESULTS
+// ============================================================
+function endG(){
+  stpT(); document.onkeydown=null;
+  if(window.speechSynthesis)try{window.speechSynthesis.cancel();}catch(e){}
+  const el=Math.round((Date.now()-t0)/1000);
+  const cor=as.filter(a=>a.ok).length,tot=as.length;
+  const pct=tot?Math.round((cor/tot)*100):0;
+  const g=grd(pct),gi=GI[g];
+  const isN=mode==='survival'?sc>bS:(mode==='challenge'?sc>bC:false);
+  if(mode==='survival'&&sc>bS)bS=sc;
+  if(mode==='challenge'&&sc>bC)bC=sc;
+  svBest(); if(mode!=='review')svLB(cor,tot,el,g);
+  if(mode==='daily')sSet('wq_daily_done_'+todayKey()+'_'+difficulty,'1',false);
+  document.getElementById('rem').textContent=gi.e;
+  document.getElementById('rgr').textContent=g;document.getElementById('rgr').style.color=gi.c;
+  document.getElementById('rmsg').textContent=t('gm')[g];
+  document.getElementById('rtitle').textContent=t('title_'+g);
+  document.getElementById('rnk').textContent=nick+t('your_r');
+  document.getElementById('rsc').textContent=sc+scoreWord();
+  document.getElementById('rnew').style.display=isN?'block':'none';
+  document.getElementById('rco').textContent=cor;
+  document.getElementById('rwr').textContent=tot-cor;
+  document.getElementById('rti').textContent=fmt(el);
+  const wrongs=as.filter(a=>!a.ok);
+  document.getElementById('rwrtry').style.display=wrongs.length?'block':'none';
+  document.getElementById('rwl').textContent=t('wr_rev')+' ('+wrongs.length+')';
+  document.getElementById('rwls').innerHTML=wrongs.length?wrongs.map((a,i)=>{
+    const q=a.q;
+    const correctName=q.type==='flag'?cname(q.code):lmName(q.lm)+' · '+cname(q.code);
+    const chosenCode=a.ch>=0?(q.type==='flag'?q.opts[a.ch][0]:q.opts[a.ch]):null;
+    const chosenName=a.ch>=0?cname(chosenCode):(lang==='zh'?'超时':(lang==='en'?'Time up':'시간 초과'));
+    const flagCode=q.code;
+    const qtxt=questionText(q);
+    const note=q.type==='flag'
+      ? `${t('review_hint')}: ${cname(q.code)} · ${tr(q.reg)}`
+      : `${t('review_hint')}: ${lmName(q.lm)} · ${lmCity(q.lm)} · ${cname(q.code)}`;
+    return`<div class="review-card">
+      <span class="fi fi-${flagCode}" style="width:42px;height:28px;border-radius:4px;background-size:cover;border:0.5px solid #475569;display:inline-block"></span>
+      <div><div class="review-q">${i+1}. ${qtxt}</div>
+      <div style="font-size:12px;color:#f87171;margin-bottom:2px">${t('my_a')}${chosenName}</div>
+      <div style="font-size:12px;color:#4ade80">${t('rt_a')}${correctName}</div>
+      <div class="review-note">${note}</div></div></div>`;
+  }).join(''):`<div style="padding:16px 0;color:#4ade80;font-size:13px;text-align:center">${lang==='zh'?'全部答对！':(lang==='en'?'All correct!':'전부 정답입니다!')}</div>`;
+  wop=false;document.getElementById('rwls').style.display='none';document.getElementById('rwc').textContent='▼';
+  goS('s-res');
+}
+
+function togW(){wop=!wop;document.getElementById('rwls').style.display=wop?'block':'none';document.getElementById('rwc').textContent=wop?'▲':'▼';}
+
+function retry(){
+  stpAuto();
+  qi=0;sc=0;lv=3;as=[];ch=null;wop=false;t0=Date.now();
+  if(mode==='daily')qs=prepDaily();
+  else if(mode==='review')qs=qtype==='flag'?prep('challenge'):prepLand('challenge');
+  else qs=qtype==='flag'?prep(mode):prepLand(mode);
+  if(mode==='survival')updL();
+  goS('s-game');rnQ();document.onkeydown=kbH;
+}
+function retryWrong(){
+  const wrongs=as.filter(a=>!a.ok).map(a=>a.q);
+  if(!wrongs.length)return;
+  mode='review'; qs=sh(wrongs); qi=0; sc=0; lv=3; as=[]; ch=null; wop=false; t0=Date.now();
+  document.getElementById('gb').textContent=t('wrong_retry')+' · '+t('diff_'+difficulty);
+  document.getElementById('gl').style.display='none';document.getElementById('gpw').style.display='block';
+  goS('s-game'); rnQ(); document.onkeydown=kbH;
+}
+
+function cpyR(){
+  const cor=as.filter(a=>a.ok).length,g=grd(Math.round((cor/Math.max(as.length,1))*100));
+  const modeName=mode==='survival'?t('surv'):(mode==='daily'?t('daily'):(mode==='review'?t('wrong_retry'):t('chal')));
+  const qtName=qtype==='flag'?t('qt_flag'):t('qt_land');
+  const txt=`🌍 ${t('title')}\n${nick}${t('your_r')}\n${modeName} · ${qtName} · ${t('diff_'+difficulty)}\n${lang==='zh'?'得分':(lang==='en'?'Score':'점수')}: ${sc}${scoreWord()} | ${lang==='zh'?'正确':(lang==='en'?'Correct':'정답')}: ${cor}/${as.length}\n${lang==='zh'?'等级':(lang==='en'?'Grade':'등급')}: ${g}\n\n${lang==='zh'?'一起挑战！':(lang==='en'?'Try the world challenge!':'나도 도전해보기!')}`;
+  navigator.clipboard.writeText(txt).then(()=>{const b=document.getElementById('rsh');b.textContent=t('copied');setTimeout(()=>b.textContent=t('share'),2000);}).catch(()=>{});
+}
+
+// ============================================================
+// LEADERBOARD
+// ============================================================
+function sGet(key,shared=false){
+  try{if(window.storage&&window.storage.get)return window.storage.get(key,shared).then(r=>r?r.value:null).catch(()=>localStorage.getItem(key));}
+  catch(e){}
+  return Promise.resolve(localStorage.getItem(key));
+}
+function sSet(key,val,shared=false){
+  try{localStorage.setItem(key,val);}catch(e){}
+  try{if(window.storage&&window.storage.set)return window.storage.set(key,val,shared).catch(()=>{});}
+  catch(e){}
+  return Promise.resolve();
+}
+async function svLB(cor,tot,el,g){
+  const key='wq_'+mode+'_'+qtype+'_'+difficulty;
+  const now=new Date();
+  const ts=(now.getMonth()+1)+'/'+now.getDate()+' '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  const entry={nickname:nick,score:sc,correct:cor,total:tot,time:el,grade:g,date:ts,lang,difficulty};
+  let list=[];
+  try{list=JSON.parse(await sGet(key,true)||'[]');}catch(e){list=[];}
+  list.push(entry);list.sort((a,b)=>b.score-a.score);list=list.slice(0,20);
+  await sSet(key,JSON.stringify(list),true);
+}
+async function ldLB(m,qt){try{return JSON.parse(await sGet('wq_'+m+'_'+qt+'_'+difficulty,true)||'[]');}catch(e){return[];}}
+async function svBest(){await sSet('wq_bs_'+difficulty,String(bS),false);await sSet('wq_bc_'+difficulty,String(bC),false);}
+async function ldBests(){
+  try{const s=await sGet('wq_bs_'+difficulty,false),c=await sGet('wq_bc_'+difficulty,false);if(s)bS=parseInt(s)||0;if(c)bC=parseInt(c)||0;}catch(e){}
+  try{const sl=await ldLB('survival',qtype),top=sl.slice(0,3);if(top.length){document.getElementById('hpv').style.display='block';const md=['🥇','🥈','🥉'];document.getElementById('hpl').innerHTML=top.map((e,i)=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--brd)"><span>${md[i]} ${e.nickname}</span><span style="color:var(--acc);font-weight:600">${e.score}${scoreWord()}</span></div>`).join('');}}catch(e){}
+}
+async function openLB(){ltab='survival';document.getElementById('lts').className='tab on';document.getElementById('ltc').className='tab';goS('s-lb');rnLB();}
+async function slt(t2){ltab=t2;document.getElementById('lts').className='tab'+(t2==='survival'?' on':'');document.getElementById('ltc').className='tab'+(t2==='challenge'?' on':'');rnLB();}
+async function rnLB(){
+  const list=await ldLB(ltab,qtype),el=document.getElementById('lbl'),em=document.getElementById('lbe');
+  if(!list.length){el.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';const md=['🥇','🥈','🥉'];const gi=GI;
+  el.innerHTML=list.map((e,i)=>{const isMe=e.nickname===nick;const g=e.grade||'D';const gc=gi[g]?gi[g].c:'#64748b';
+    return`<div class="lr${isMe?' me':''}"><span style="font-size:16px;width:26px;text-align:center;flex-shrink:0">${i<3?md[i]:(i+1)+'.'}</span><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:var(--txt)">${e.nickname}${isMe?` <span style="font-size:10px;background:#6366f130;color:#a5b4fc;padding:1px 5px;border-radius:20px">me</span>`:''}</div><div style="font-size:10px;color:#475569">${e.correct||0}/${e.total||0} · ${fmt(e.time||0)} · ${e.date||''}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:700;color:${gc}">${g}</div><div style="font-size:12px;color:var(--mut)">${e.score}${scoreWord()}</div></div></div>`;
+  }).join('');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderHome();
+ldBests();
+document.onkeydown=(e)=>{if(document.getElementById('s-game').classList.contains('on'))kbH(e);};
+</script>
