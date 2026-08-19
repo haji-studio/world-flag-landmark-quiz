@@ -1,4 +1,11 @@
-<!-- World Flag & Landmark Quiz V4.6 -->
+﻿<!-- 60s World Quiz V4.8, based on flags_quiz_v4_7_3d_globe.html -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#061829">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WorldQuiz">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -8,6 +15,10 @@
 @keyframes fd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fu{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-65px)}}
 @keyframes shk{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}15%{transform:translateX(-9px)}30%{transform:translateX(8px)}45%{transform:translateX(-6px)}60%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+@keyframes correctPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-62%) scale(.9)}}
+@keyframes flashOk{0%{opacity:0}20%{opacity:.42}100%{opacity:0}}
+@keyframes flashNo{0%{opacity:0}20%{opacity:.5}100%{opacity:0}}
 .card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:14px 18px;margin-bottom:10px}
 .bp{width:100%;padding:11px;border-radius:9px;border:none;background:var(--acc);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
 .bp:hover{opacity:.88}
@@ -35,8 +46,17 @@ input:focus{border-color:var(--acc)}
 /* Float */
 .fl{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:22px;font-weight:800;pointer-events:none;animation:fu 1.2s ease-out forwards;white-space:nowrap;z-index:9}
 #gw{position:relative}
-.ht{font-size:18px;display:inline-block}
-.ht.lost{opacity:.2;filter:grayscale(1)}
+#gw.wrong-shake{animation:wrongShake .42s ease}
+.answer-pop{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);z-index:500;pointer-events:none;padding:14px 22px;border-radius:999px;font-size:24px;font-weight:1000;letter-spacing:-.5px;box-shadow:0 18px 45px rgba(0,0,0,.45);animation:correctPop 1.05s ease forwards}
+.answer-pop.ok{background:linear-gradient(135deg,#22c55e,#06b6d4);color:#ecfeff;border:1px solid rgba(255,255,255,.35)}
+.answer-pop.no{background:linear-gradient(135deg,#ef4444,#7f1d1d);color:#fff1f2;border:1px solid rgba(255,255,255,.28)}
+.screen-flash{position:fixed;inset:0;z-index:480;pointer-events:none}
+.screen-flash.ok{background:radial-gradient(circle,rgba(34,197,94,.55),transparent 58%);animation:flashOk .7s ease forwards}
+.screen-flash.no{background:radial-gradient(circle,rgba(239,68,68,.58),transparent 58%);animation:flashNo .7s ease forwards}
+.burst-star{position:fixed;left:50%;top:44%;z-index:501;pointer-events:none;color:#fde047;font-size:18px;font-weight:900;animation:fu .9s ease-out forwards}
+.ht{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;margin-right:4px;transition:opacity .2s,transform .2s}
+.ht svg{width:25px;height:25px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.28))}
+.ht.lost{opacity:.22;filter:grayscale(1);transform:scale(.92)}
 .lr{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;border:1px solid var(--brd);background:var(--card);margin-bottom:6px}
 .lr.me{border-color:var(--acc);background:#1e1b4b}
 .tab{flex:1;padding:7px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:500;background:transparent;color:var(--dim);transition:all .2s}
@@ -59,7 +79,45 @@ input:focus{border-color:var(--acc)}
 .lm-fb{width:100%;height:190px;border-radius:10px;border:1px solid var(--brd);background:var(--card);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px}
 /* snd button */
 .sndbtn{position:fixed;bottom:16px;right:16px;width:42px;height:42px;border-radius:50%;background:var(--card);border:1px solid var(--brd);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;transition:background .2s}
+.sndbtn.on{background:#2563eb;color:white;border-color:#38bdf8}
 .sndbtn:hover{background:var(--acc)}
+.audio-panel{position:fixed;right:16px;bottom:66px;width:min(300px,calc(100vw - 32px));z-index:260;padding:14px;background:rgba(8,17,31,.97);border:1px solid #475569;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.5);display:none}
+.audio-panel.on{display:block;animation:fd .18s ease}
+.audio-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#f8fafc;font-size:14px;font-weight:900}
+.audio-close{border:0;background:transparent;color:#94a3b8;font-size:20px;cursor:pointer;line-height:1}
+.audio-row{display:grid;grid-template-columns:66px 1fr 42px;align-items:center;gap:9px;margin-top:10px;color:#cbd5e1;font-size:12px}
+.audio-row input[type=range]{padding:0;border:0;background:transparent;accent-color:#38bdf8}
+.audio-toggle{height:26px;border:1px solid #475569;border-radius:99px;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:800;cursor:pointer}
+.audio-toggle.on{background:#0c4a6e;border-color:#38bdf8;color:#e0f2fe}
+.audio-track{margin-top:10px;padding-top:10px;border-top:1px solid #334155;color:#64748b;font-size:10px}
+.home-audio-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;border:1px solid #475569;background:#172033;color:#cbd5e1;font-size:11px;font-weight:800;cursor:pointer}
+.home-audio-btn.on{border-color:#38bdf8;background:#075985;color:#fff;box-shadow:0 0 0 2px rgba(56,189,248,.12)}
+.step-label{display:flex;align-items:center;gap:8px;margin:13px 0 8px!important;color:#dbeafe!important}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#2563eb;color:#fff;font-size:12px;font-weight:900;box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+.step-help{font-size:10px;color:#7dd3fc;font-weight:600;margin-left:auto}
+.selection-status{margin:-2px 0 10px;padding:8px 11px;border:1px solid rgba(56,189,248,.24);border-radius:10px;background:rgba(8,47,73,.42);color:#bae6fd;font-size:11px;text-align:center}
+.qtab-btn.on:after{content:attr(data-selected-label);position:absolute;right:7px;top:7px;padding:2px 6px;border-radius:99px;background:#22c55e;color:#052e16;font-size:9px;font-weight:900}
+.flag-img{display:block;width:100%;height:100%;object-fit:contain;background:#f8fafc;border-radius:12px;border:1px solid rgba(71,85,105,.75)}
+.flag-code-fallback{display:flex;width:100%;aspect-ratio:3/2;align-items:center;justify-content:center;background:#f8fafc;color:#0f172a;font-size:38px;font-weight:900;letter-spacing:5px;text-transform:uppercase;border-radius:12px}
+.flag-shot img{object-fit:contain!important;background:#f8fafc}
+.land-shot img{object-fit:cover!important}
+/* Capital quiz card — C style (photo + overlay) */
+.cap-card-c{position:relative;width:100%;border-radius:16px;overflow:hidden;min-height:160px;background:#0c1a2e;border:1px solid #1e3a5f;margin-bottom:4px}
+.cap-img{display:none;width:100%;height:160px;object-fit:cover;opacity:.72}
+.cap-no-photo{display:none;width:100%;height:160px;background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e293b 100%)}
+.cap-img-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.45) 55%,transparent 100%);padding:14px 16px}
+.cap-city{font-size:36px;font-weight:900;color:#f1f5f9;letter-spacing:-1px;line-height:1.1;text-shadow:0 2px 16px rgba(0,0,0,.7)}
+.cap-hint{font-size:12px;color:#94a3b8;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+/* 3-col qtab */
+.qtab-3{grid-template-columns:1fr 1fr 1fr!important}
+.qtab-3 .qtab-btn{min-height:80px!important}
+.cap-shot{position:relative;display:flex;width:100%;height:76px;overflow:hidden;border-radius:10px;background:#0f172a}
+.cap-flag-half{width:58%;height:100%;overflow:hidden;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#0c1a2e}
+.cap-flag-img{width:88%;height:auto;max-height:82%;object-fit:contain;border-radius:3px;box-shadow:0 2px 8px rgba(0,0,0,.4);flex-shrink:0}
+.cap-ask-half{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(135deg,#1e1b4b,#1d4ed8);position:relative}
+.cap-ask-half::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,transparent,rgba(99,102,241,.6),transparent)}
+.cap-ask-q{font-size:30px;font-weight:900;color:#e0e7ff;line-height:1;text-shadow:0 2px 12px rgba(99,102,241,.8)}
+.cap-ask-label{font-size:8px;color:#a5b4fc;font-weight:800;letter-spacing:1.2px}
 
 /* V4 polish: classroom-friendly world adventure UI */
 body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 100%);}
@@ -70,6 +128,8 @@ body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 1
 .hero-planet{font-size:52px;margin-bottom:6px;animation:shk 3.8s ease-in-out infinite}
 .pill-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px}
 .pill{font-size:10px;color:#cbd5e1;border:1px solid #475569;background:#02061755;padding:4px 8px;border-radius:99px}
+.setup-label{font-size:12px;color:var(--mut);margin:10px 0 7px;font-weight:700}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
 .mc{background:linear-gradient(180deg,#1e293b,#111827);min-height:150px;position:relative;overflow:hidden}
 .mc:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 42%);pointer-events:none}
 .mc.daily{grid-column:1/3;border-color:#f59e0b;background:linear-gradient(135deg,#451a03,#1e293b 55%,#0f172a)}
@@ -88,14 +148,32 @@ body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 1
 .voicebtn.on{background:#f59e0b;color:#111827;border-color:#f59e0b}
 .voicebtn:hover{background:#f59e0b;color:#111827}
 @media(max-width:420px){#app{border-radius:0}.hero{padding-top:16px}.flag-frame{width:205px}.lm-img,.lm-fb{height:175px}.ob{font-size:12px}}
-/* V4.6 polish */
+@media(max-width:480px){
+  body{margin:0!important;overflow-x:hidden}
+  #app{width:100%!important;max-width:none!important;min-height:100svh;padding:10px!important;border-radius:0!important}
+  .hero{min-height:auto!important;padding:10px!important}
+  .hero-planet{height:auto!important;margin-bottom:4px!important}
+  .css-globe,#globe3d{max-width:min(68vw,250px)!important;max-height:min(68vw,250px)!important}
+  .qtab{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .qtab-btn{min-width:0!important;overflow:hidden}
+  .quiz-shot{width:100%!important;max-width:132px!important;height:78px!important}
+  .quiz-shot img{width:100%!important;height:100%!important;object-fit:cover!important}
+  .setup-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .mc{min-width:0!important}
+  .flag-frame{width:min(88vw,244px)!important}
+  #gfl{width:100%!important;height:auto!important;aspect-ratio:3/2!important}
+  .lm-wrap{width:100%!important}
+  .lm-img,.lm-fb{width:100%!important;height:auto!important;min-height:190px!important;max-height:55svh!important;object-fit:contain!important}
+  .audio-panel{right:10px!important;bottom:64px!important;width:calc(100vw - 20px)!important}
+}
+/* World Quest polish */
 .version-badge{position:absolute;left:12px;top:12px;font-size:10px;color:#cbd5e1;background:rgba(15,23,42,.58);border:1px solid rgba(255,255,255,.16);padding:3px 8px;border-radius:999px;backdrop-filter:blur(6px)}
 .daily-done{color:#86efac!important;background:#22c55e22!important;border-color:#22c55e66!important}
 #gnx{opacity:.72;pointer-events:auto}
 .review-card:first-child{border-top:none}
 
 
-/* V4.6 landmark photo fixes: full image, no answer-hint city, stronger loading state */
+/* Landmark photo fixes: full image, no answer-hint city, stronger loading state */
 .lm-wrap{background:#08111f;border-radius:14px;border:1px solid #334155;overflow:hidden}
 .lm-img{height:230px!important;object-fit:contain!important;background:#08111f;border:none!important;border-radius:13px!important;padding:0;filter:saturate(1.08) contrast(1.04);}
 .lm-fb{height:230px!important;background:linear-gradient(135deg,#111827,#0f172a)!important;border:none!important;border-radius:13px!important}
@@ -105,64 +183,886 @@ body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 1
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:420px){.lm-img,.lm-fb{height:220px!important}.lm-badge{max-width:78%;font-size:10px}}
 
+/* V4.8 development baseline: V4.7 premium world quest UI */
+body{
+  min-height:100svh;
+  background:
+    linear-gradient(180deg,rgba(7,89,133,.32),transparent 32%),
+    linear-gradient(145deg,rgba(20,184,166,.2),transparent 38%),
+    linear-gradient(225deg,rgba(37,99,235,.2),transparent 42%),
+    linear-gradient(180deg,#061829 0%,#07111f 48%,#020617 100%)!important;
+}
+#app{
+  max-width:430px;
+  padding:13px;
+  background:
+    linear-gradient(180deg,rgba(15,23,42,.86),rgba(2,6,23,.94)),
+    radial-gradient(circle at 50% 0%,rgba(14,165,233,.22),transparent 34%)!important;
+  border:1px solid rgba(148,163,184,.14);
+  border-radius:24px;
+}
+.hero{
+  border:1px solid rgba(125,211,252,.22)!important;
+  background:
+    linear-gradient(180deg,rgba(12,74,110,.48),transparent 32%),
+    linear-gradient(135deg,rgba(20,184,166,.18),transparent 36%),
+    linear-gradient(225deg,rgba(99,102,241,.2),transparent 42%),
+    linear-gradient(180deg,rgba(7,33,58,.98),rgba(8,20,38,.95) 58%,rgba(3,10,23,.98))!important;
+  border-radius:24px!important;
+  padding:12px 13px 13px!important;
+  box-shadow:0 22px 60px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.hero:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:
+    radial-gradient(circle,rgba(255,255,255,.45) 0 1px,transparent 1.5px),
+    radial-gradient(circle,rgba(125,211,252,.38) 0 1px,transparent 1.5px);
+  background-size:56px 56px,88px 88px;
+  background-position:8px 12px,34px 18px;
+  opacity:.28;
+  pointer-events:none;
+}
+.hero:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:34px;
+  width:230px;
+  height:150px;
+  transform:translateX(-50%);
+  background:linear-gradient(90deg,transparent,rgba(56,189,248,.18),rgba(45,212,191,.14),transparent);
+  border-radius:50%;
+  filter:blur(18px);
+  pointer-events:none;
+}
+.version-badge{left:13px;top:12px;background:rgba(2,6,23,.62);border-color:rgba(125,211,252,.2);color:#bae6fd}
+.hero-planet{
+  width:178px;
+  height:178px;
+  margin:-2px auto 7px!important;
+  position:relative;
+  font-size:0!important;
+  animation:none!important;
+  filter:drop-shadow(0 22px 32px rgba(0,0,0,.34));
+}
+.hero-planet,.version-badge,#h-title,#h-sub{position:relative;z-index:2}
+.hero-planet:before{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:12px;
+  width:142px;
+  height:21px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(56,189,248,.22),transparent 70%);
+  filter:blur(1px);
+}
+#globe3d{
+  position:absolute;
+  z-index:4;
+  left:50%;
+  top:50%;
+  width:154px;
+  height:154px;
+  display:none;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+}
+.css-globe{
+  position:absolute;
+  z-index:2;
+  left:50%;
+  top:50%;
+  width:154px;
+  height:154px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 34% 23%,rgba(255,255,255,.34),transparent 20%),
+    linear-gradient(135deg,#0ea5e9 0%,#1d4ed8 58%,#020617 100%);
+  background-color:#082f49;
+  box-shadow:
+    inset -28px -24px 42px rgba(2,6,23,.38),
+    inset 18px 14px 26px rgba(255,255,255,.13),
+    0 0 32px rgba(56,189,248,.28);
+}
+.css-globe:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at 28% 30%,rgba(34,197,94,.92) 0 13%,transparent 14%),
+    radial-gradient(ellipse at 54% 42%,rgba(22,163,74,.86) 0 18%,transparent 19%),
+    radial-gradient(ellipse at 68% 68%,rgba(132,204,22,.7) 0 11%,transparent 12%),
+    radial-gradient(ellipse at 33% 72%,rgba(21,128,61,.8) 0 10%,transparent 11%);
+  opacity:.5;
+}
+.earth-photo{
+  position:absolute;
+  z-index:1;
+  left:0;
+  top:0;
+  width:308px;
+  height:154px;
+  max-width:none;
+  object-fit:cover;
+  animation:earthPhotoSpinImg 42s linear infinite;
+  filter:saturate(1.16) contrast(1.08);
+}
+.css-globe:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 22%,rgba(255,255,255,.36),transparent 21%),
+    radial-gradient(circle at 64% 72%,rgba(2,6,23,.5),transparent 42%),
+    linear-gradient(90deg,rgba(2,6,23,.4),transparent 28%,transparent 62%,rgba(2,6,23,.52)),
+    linear-gradient(135deg,rgba(255,255,255,.18),transparent 36%);
+  box-shadow:inset -30px -20px 38px rgba(2,6,23,.48),inset 12px 8px 18px rgba(255,255,255,.18);
+}
+@keyframes earthPhotoSpin{from{background-position:0 50%}to{background-position:-368px 50%}}
+@keyframes earthPhotoSpinImg{from{transform:translateX(0)}to{transform:translateX(-154px)}}
+#h-title{
+  font-size:24px!important;
+  line-height:1.12;
+  letter-spacing:0!important;
+  background:linear-gradient(180deg,#fff,#dbeafe 62%,#93c5fd);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent!important;
+  text-shadow:none;
+}
+#h-sub{font-size:12px!important;line-height:1.35;color:rgba(226,232,240,.82)!important;max-width:330px;margin:4px auto 0}
+.pill{color:#dbeafe!important;border-color:rgba(125,211,252,.18)!important;background:rgba(15,23,42,.56)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.qtab,.diff-row,.card,.mc,.ob,.result-title,.lm-wrap,.flag-frame{box-shadow:0 12px 28px rgba(0,0,0,.18)}
+.qtab{display:grid!important;grid-template-columns:1fr 1fr;gap:7px;padding:4px!important;background:rgba(15,23,42,.58)!important;border:1px solid rgba(125,211,252,.12)!important;border-radius:16px!important;box-shadow:0 10px 22px rgba(0,0,0,.14)!important}
+.qtab-btn{
+  border-radius:13px!important;
+  min-height:96px;
+  padding:8px!important;
+  font-weight:900;
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:7px!important;
+  overflow:hidden;
+  position:relative;
+  border:1px solid rgba(148,163,184,.16)!important;
+  background:linear-gradient(180deg,rgba(30,41,59,.88),rgba(15,23,42,.92))!important;
+  color:#cbd5e1!important;
+  box-shadow:none;
+}
+.qtab-btn.on{
+  color:#fff!important;
+  border-color:rgba(125,211,252,.56)!important;
+  background:linear-gradient(180deg,rgba(37,99,235,.62),rgba(8,47,73,.94))!important;
+  box-shadow:0 14px 30px rgba(37,99,235,.24),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.quiz-shot{
+  width:114px;
+  height:76px;
+  max-width:100%;
+  border-radius:13px;
+  border:1px solid rgba(255,255,255,.24);
+  background:rgba(2,6,23,.55);
+  box-shadow:0 10px 20px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.14);
+  overflow:hidden;
+  position:relative;
+  flex-shrink:0;
+}
+.flag-shot{
+  display:block;
+  background:linear-gradient(135deg,#082f49,#0f172a);
+}
+.flag-shot img:not(.fg-img){
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border-radius:7px;
+  object-fit:cover;
+  display:block;
+  filter:saturate(1.08) contrast(1.05);
+  transition:opacity .25s ease;
+}
+.flag-grid{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;border-radius:7px;overflow:hidden}
+.flag-grid .fg-img{position:static;width:100%;height:100%;object-fit:cover;border-radius:0;display:block;filter:saturate(1.08) contrast(1.05);transition:opacity .18s}
+.flag-shot .fi{display:none}
+.land-shot{
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  display:grid;
+  place-items:center;
+}
+.land-shot img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  filter:saturate(1.08) contrast(1.04);
+  transition:opacity .25s ease;
+  background:#020617;
+}
+.land-shot:after,.flag-shot:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.26),transparent 42%,rgba(2,6,23,.12));
+  pointer-events:none;
+}
+.qtab-btn span:last-child{font-size:12px;line-height:1;text-align:center;color:inherit;white-space:nowrap}
+.diff-row{gap:8px!important}
+.dbtn{min-height:42px;border-radius:14px!important;background:rgba(15,23,42,.66)!important;border-color:rgba(148,163,184,.14)!important}
+.dbtn.on{background:linear-gradient(135deg,rgba(34,197,94,.22),rgba(14,165,233,.13))!important;box-shadow:0 0 0 1px rgba(34,197,94,.18) inset}
+.card{border-radius:18px!important;background:linear-gradient(180deg,rgba(30,41,59,.86),rgba(15,23,42,.88))!important;border-color:rgba(148,163,184,.14)!important}
+input{min-height:43px;border-radius:13px!important;background:rgba(2,6,23,.54)!important;border-color:rgba(148,163,184,.22)!important}
+.traveler-card{
+  padding:12px 13px!important;
+  display:grid;
+  grid-template-columns:76px 1fr;
+  gap:13px;
+  align-items:center;
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 8% 18%,rgba(56,189,248,.18),transparent 30%),
+    linear-gradient(180deg,rgba(30,41,59,.9),rgba(15,23,42,.92))!important;
+}
+.traveler-card:after{content:"";position:absolute;right:-22px;bottom:-34px;width:105px;height:105px;border-radius:50%;border:1px solid rgba(56,189,248,.12);box-shadow:0 0 0 18px rgba(56,189,248,.035);pointer-events:none}
+.traveler-mark{
+  width:72px;height:72px;border-radius:50%;
+  padding:3px;
+  background:linear-gradient(135deg,#38bdf8,#6366f1,#0ea5e9);
+  box-shadow:0 0 0 1px rgba(56,189,248,.25),0 0 22px rgba(56,189,248,.35),0 8px 24px rgba(0,0,0,.5);
+  display:grid;place-items:center;
+  position:relative;z-index:1;flex-shrink:0;
+}
+.tv-avatar{width:66px;height:66px;border-radius:50%;overflow:hidden;background:#1e293b}
+.tv-avatar img{width:100%;height:100%;object-fit:cover;object-position:top}
+.traveler-copy{min-width:0;position:relative;z-index:1}
+.traveler-label{font-size:12px;color:#93c5fd;font-weight:900;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.traveler-label:before{content:"";width:14px;height:14px;background:linear-gradient(135deg,#facc15,#f97316);clip-path:polygon(50% 0,62% 34%,100% 34%,70% 55%,82% 100%,50% 72%,18% 100%,30% 55%,0 34%,38% 34%);display:inline-block}
+.traveler-input-wrap{position:relative}
+.traveler-input-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:17px;pointer-events:none;z-index:2}
+.traveler-input{min-height:42px!important;padding:8px 11px 8px 37px!important;font-size:13px!important}
+.traveler-hint{font-size:10px;color:#64748b;margin-top:5px}
+@media(max-width:360px){.traveler-card{grid-template-columns:64px 1fr;gap:9px}.traveler-mark{width:60px;height:60px}.tv-avatar{width:54px;height:54px}.traveler-input{padding-left:34px!important}}
+.mc{
+  border-radius:20px!important;
+  min-height:132px;
+  padding:12px 11px!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(125,211,252,.12),transparent 34%),
+    linear-gradient(180deg,rgba(30,41,59,.96),rgba(10,18,32,.96))!important;
+  border-color:rgba(148,163,184,.15)!important;
+}
+.mc:before{opacity:.58}
+.mc:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 20px 38px rgba(0,0,0,.28)}
+.mc.daily{
+  min-height:86px;
+  padding:11px 12px!important;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:10px;
+  align-items:center;
+  text-align:left;
+  border-color:rgba(250,204,21,.46)!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(250,204,21,.20),transparent 36%),
+    linear-gradient(135deg,rgba(69,26,3,.92),rgba(30,41,59,.96) 58%,rgba(8,47,73,.92))!important;
+}
+.mc.daily .mode-art{min-height:0;margin:0!important}
+.mc.daily .mode-art:before{width:44px;height:44px;border-color:rgba(250,204,21,.2);background:linear-gradient(135deg,rgba(250,204,21,.18),rgba(15,23,42,.28))}
+.mc.daily .art-icon{width:28px;height:28px;margin:0}
+.daily-mark{
+  position:relative;
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+}
+.daily-mark:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:15px;
+  background:
+    radial-gradient(circle at 35% 25%,rgba(255,255,255,.28),transparent 24%),
+    linear-gradient(135deg,rgba(250,204,21,.24),rgba(15,23,42,.36));
+  border:1px solid rgba(250,204,21,.25);
+}
+.daily-mark .mode-art{position:relative;z-index:1}
+.daily-num{
+  position:absolute;
+  right:-2px;
+  bottom:-2px;
+  z-index:2;
+  min-width:19px;
+  height:19px;
+  padding:0 4px;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  background:#facc15;
+  color:#422006;
+  font-size:10px;
+  font-weight:900;
+  border:2px solid rgba(15,23,42,.92);
+  box-shadow:0 5px 10px rgba(0,0,0,.22);
+}
+.mc.daily #md-t{font-size:14px!important;margin:0 0 3px!important}
+.mc.daily #md-d{font-size:10.5px!important;line-height:1.35!important;margin:0!important}
+.mc.daily .daily-tag{margin:0!important;white-space:nowrap}
+.mc.daily .mode-record{display:none}
+.daily-tag{font-weight:900}
+.bp{border-radius:14px!important;background:linear-gradient(135deg,#2563eb,#06b6d4)!important;min-height:44px;box-shadow:0 10px 22px rgba(37,99,235,.22)}
+.bs{border-radius:14px!important;background:rgba(15,23,42,.7)!important;border-color:rgba(148,163,184,.16)!important}
+.flag-frame{width:min(244px,100%)!important;padding:12px!important;border-radius:22px!important;background:linear-gradient(145deg,#f8fafc,#94a3b8 72%,#475569)!important}
+#gfl{width:220px!important;height:146px!important;border-radius:12px!important}
+.lm-wrap{border-radius:18px!important;border-color:rgba(125,211,252,.18)!important;background:#020617!important}
+.lm-img,.lm-fb{border-radius:17px!important}
+.ob{border-radius:15px!important;border-color:rgba(148,163,184,.14)!important}
+.ol{border-radius:10px}
+.tbar-wrap{height:9px;border-radius:999px;background:rgba(15,23,42,.92)!important}
+.result-title{border-radius:999px}
+.art-icon{
+  width:30px;
+  height:30px;
+  display:block;
+  margin:0 auto 6px;
+  border-radius:14px;
+  filter:drop-shadow(0 8px 14px rgba(0,0,0,.22));
+}
+.art-icon.small{
+  width:24px;
+  height:24px;
+  display:inline-block;
+  vertical-align:middle;
+  margin:0 5px 0 0;
+  border-radius:8px;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.18));
+}
+.qtab-btn,.dbtn{display:flex;align-items:center;justify-content:center;gap:4px}
+.mode-art{
+  font-size:0!important;
+  margin-bottom:1px!important;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.mode-art:before{
+  content:"";
+  position:absolute;
+  width:46px;
+  height:46px;
+  border-radius:15px;
+  background:linear-gradient(135deg,rgba(125,211,252,.16),rgba(15,23,42,.24));
+  border:1px solid rgba(125,211,252,.14);
+}
+.mode-art .art-icon{position:relative;z-index:1}
+.mode-record{font-size:10px;color:#bae6fd;background:rgba(14,165,233,.14);border:1px solid rgba(125,211,252,.22);padding:3px 8px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;min-height:20px;margin-top:6px}
+.life-preview svg{width:58px;height:18px;display:block}
+.mode-visual{
+  height:54px;
+  border-radius:15px;
+  border:1px solid rgba(125,211,252,.16);
+  background:linear-gradient(135deg,rgba(15,23,42,.7),rgba(30,41,59,.5));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  margin-bottom:8px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+.mode-visual .mode-art{min-height:0;margin:0!important}
+.mode-visual .mode-art:before{display:none}
+.mode-number{font-size:32px;font-weight:900;line-height:1;color:#e0f2fe;letter-spacing:-1px}
+.mode-unit{font-size:11px;font-weight:900;color:#93c5fd;line-height:1.15;text-align:left}
+.mode-illus{width:100%;height:100%;display:block;overflow:visible}
+.mode-life .mode-number{color:#fda4af}
+.mode-life{
+  border-color:rgba(248,113,113,.55)!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(239,68,68,.28),transparent 55%),
+    linear-gradient(160deg,rgba(127,29,29,.72),rgba(15,23,42,.96))!important;
+  box-shadow:0 0 0 1px rgba(248,113,113,.18),0 16px 32px rgba(127,29,29,.35)!important;
+}
+.mode-life .mc-title{color:#fca5a5!important}
+.mode-challenge{
+  border-color:rgba(56,189,248,.55)!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(37,99,235,.32),transparent 55%),
+    linear-gradient(160deg,rgba(8,47,73,.82),rgba(15,23,42,.96))!important;
+  box-shadow:0 0 0 1px rgba(56,189,248,.18),0 16px 32px rgba(8,47,73,.45)!important;
+}
+.mode-challenge .mc-title{color:#7dd3fc!important}
+.mode-challenge .mode-number{color:#bae6fd}
+.mode-challenge .mode-unit{color:#38bdf8}
+.game-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:10px;
+  padding:10px 11px;
+  border:1px solid rgba(125,211,252,.14);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 0% 0%,rgba(56,189,248,.18),transparent 34%),
+    linear-gradient(180deg,rgba(30,41,59,.76),rgba(15,23,42,.82));
+  box-shadow:0 12px 26px rgba(0,0,0,.18);
+}
+.game-badge{
+  font-size:11px;
+  padding:4px 10px;
+  border-radius:20px;
+  background:rgba(37,99,235,.2);
+  color:#bfdbfe;
+  font-weight:900;
+  display:inline-block;
+  margin-bottom:6px;
+  border:1px solid rgba(125,211,252,.18);
+}
+.game-progress-text{font-size:10px;color:#94a3b8;margin-top:4px;font-weight:800}
+.game-scorebox{
+  min-width:76px;
+  text-align:right;
+  padding:6px 9px;
+  border-radius:15px;
+  background:rgba(2,6,23,.42);
+  border:1px solid rgba(148,163,184,.14);
+}
+.game-score{font-size:19px;font-weight:900;color:#67e8f9;line-height:1.1}
+.game-timebox{display:flex;align-items:center;gap:5px;justify-content:flex-end;margin-top:3px}
+.game-time{font-size:13px;font-weight:900;color:#86efac}
+.question-card{
+  position:relative;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(125,211,252,.16),transparent 35%),
+    linear-gradient(180deg,rgba(30,41,59,.92),rgba(8,13,25,.96))!important;
+  border:1px solid rgba(125,211,252,.16)!important;
+  border-radius:22px!important;
+  padding:18px 14px 13px;
+  text-align:center;
+  margin-bottom:12px;
+  overflow:hidden;
+  box-shadow:0 18px 36px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.question-card:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,.32) 0 1px,transparent 1.5px);
+  background-size:64px 64px;
+  opacity:.12;
+  pointer-events:none;
+}
+.question-card>*{position:relative;z-index:1}
+.question-meta{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:100%;
+  margin-top:10px;
+  padding:5px 10px;
+  border-radius:999px;
+  background:rgba(2,6,23,.48);
+  border:1px solid rgba(148,163,184,.14);
+  font-size:11px;
+  color:#cbd5e1;
+  font-weight:800;
+}
+.feedback-card{
+  border-radius:18px!important;
+  border-color:rgba(125,211,252,.16)!important;
+  background:linear-gradient(180deg,rgba(15,23,42,.9),rgba(2,6,23,.92))!important;
+}
+.result-hero{
+  position:relative;
+  text-align:center;
+  margin-bottom:10px;
+  overflow:hidden;
+  border-radius:24px!important;
+  border-color:rgba(250,204,21,.22)!important;
+  background:
+    radial-gradient(circle at 50% -8%,rgba(250,204,21,.22),transparent 34%),
+    radial-gradient(circle at 20% 0%,rgba(56,189,248,.18),transparent 30%),
+    linear-gradient(180deg,rgba(30,41,59,.94),rgba(8,13,25,.96))!important;
+}
+.result-hero:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 36%);
+  pointer-events:none;
+}
+.result-hero>*{position:relative;z-index:1}
+.result-mode{
+  display:inline-flex;
+  margin-bottom:6px;
+  padding:4px 10px;
+  border-radius:999px;
+  color:#bae6fd;
+  background:rgba(14,165,233,.14);
+  border:1px solid rgba(125,211,252,.2);
+  font-size:11px;
+  font-weight:900;
+}
+.grade-badge{
+  width:96px;
+  height:96px;
+  margin:2px auto 6px;
+  display:block;
+  filter:drop-shadow(0 16px 28px rgba(0,0,0,.45));
+}
+.result-rate{
+  display:inline-flex;
+  margin:2px 0 8px;
+  padding:4px 10px;
+  border-radius:999px;
+  color:#dcfce7;
+  background:rgba(34,197,94,.13);
+  border:1px solid rgba(74,222,128,.22);
+  font-size:11px;
+  font-weight:900;
+}
+.result-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:8px;
+}
+.result-stat{
+  background:rgba(2,6,23,.48);
+  border:1px solid rgba(148,163,184,.13);
+  border-radius:15px;
+  padding:9px 6px;
+}
+.review-panel{
+  border-radius:18px!important;
+  border-color:rgba(148,163,184,.15)!important;
+}
+.ob{
+  min-height:58px;
+  padding:12px 14px!important;
+  font-size:14px!important;
+  font-weight:900!important;
+  color:#e2e8f0!important;
+  background:
+    linear-gradient(180deg,rgba(30,41,59,.92),rgba(15,23,42,.96))!important;
+  border-color:rgba(148,163,184,.16)!important;
+  box-shadow:0 10px 22px rgba(0,0,0,.14);
+}
+.ob:hover:not([disabled]){
+  border-color:rgba(125,211,252,.48)!important;
+  background:
+    radial-gradient(circle at 0 0,rgba(56,189,248,.16),transparent 36%),
+    linear-gradient(180deg,rgba(30,41,59,.98),rgba(15,23,42,.96))!important;
+}
+.ol{
+  width:30px;
+  height:30px;
+  border-radius:12px;
+  background:rgba(37,99,235,.16);
+  border:1px solid rgba(125,211,252,.18);
+  color:#93c5fd;
+}
+.bp,.bs{font-weight:900!important}
+.mc-title{font-size:16px;font-weight:900;color:var(--txt);margin-bottom:4px;letter-spacing:-.3px}
+.mc-desc{font-size:11px;color:#94a3b8;margin-bottom:7px;line-height:1.4;min-height:30px}
+.mc .art-icon{transition:transform .2s ease,filter .2s ease}
+.mc:hover .art-icon{transform:translateY(-2px) scale(1.04);filter:drop-shadow(0 15px 22px rgba(0,0,0,.34))}
+.floating-icon{
+  width:22px;
+  height:22px;
+  display:block;
+}
+.voicebtn,.sndbtn{font-size:0!important}
+.voicebtn svg,.sndbtn svg{width:21px;height:21px}
+@media(max-width:420px){
+  #app{border-radius:0;min-height:100svh}
+  .hero-planet{width:166px;height:166px}
+  .css-globe,#globe3d{width:144px;height:144px}
+  .css-globe:before{background-size:288px 144px}
+  .earth-photo{width:288px;height:144px}
+  @keyframes earthPhotoSpin{from{background-position:0 50%}to{background-position:-316px 50%}}
+  @keyframes earthPhotoSpinImg{from{transform:translateX(0)}to{transform:translateX(-144px)}}
+  #gfl{width:200px!important;height:133px!important}
+  .qtab{gap:6px}
+  .qtab-btn{min-height:88px;padding:7px!important;gap:6px!important}
+  .quiz-shot{width:98px;height:65px}
+  .mc{min-height:126px;padding:10px 9px!important}
+  .mode-visual{height:48px;margin-bottom:7px}
+  .mode-number{font-size:23px}
+  .mc-desc{min-height:28px}
+  .mc.daily{min-height:78px;padding:9px 10px!important;gap:8px}
+  .mc.daily #md-d{font-size:10px!important}
+}
+/* [Fix] iPhone safe-area: home indicator / Dynamic Island */
+@supports(padding:env(safe-area-inset-bottom)){
+  #app{padding-bottom:calc(13px + env(safe-area-inset-bottom))!important}
+  .sndbtn{bottom:calc(16px + env(safe-area-inset-bottom))!important}
+  .voicebtn{bottom:calc(64px + env(safe-area-inset-bottom))!important}
+  .audio-panel{bottom:calc(66px + env(safe-area-inset-bottom))!important}
+}
+/* Mobile UX */
+*{-webkit-tap-highlight-color:transparent}
+button,input,a{touch-action:manipulation}
+body{overscroll-behavior:none}
+#s-game{user-select:none;-webkit-user-select:none}
+.ob:active:not([disabled]){transform:scale(.96)!important;transition:transform .08s!important;box-shadow:none!important}
+.bp:active,.bs:active{opacity:.76!important;transform:scale(.98)!important;transition:all .08s!important}
+.mc:active{transform:translateY(-1px) scale(.99)!important}
+.qtab-btn:active{opacity:.8!important;transform:scale(.97)!important}
+.game-time{font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.photo-fb{background:linear-gradient(90deg,#0f172a 25%,#1e293b 50%,#0f172a 75%)!important;background-size:200% 100%!important;animation:shimmer 1.4s infinite linear!important;border:none!important}
+@media(max-height:500px) and (orientation:landscape){.hero-planet{display:none!important}.hero{padding:6px 10px!important}}
+/* Premium flag card */
+.flag-frame{
+  width:min(300px,94%)!important;
+  padding:0!important;
+  border-radius:20px!important;
+  background:linear-gradient(160deg,#0c1f35,#111827)!important;
+  box-shadow:0 28px 52px rgba(0,0,0,.52),0 0 0 1px rgba(255,255,255,.09),inset 0 1px 0 rgba(255,255,255,.06)!important;
+  overflow:hidden;
+  position:relative;
+}
+.flag-frame:before{
+  content:"";position:absolute;top:0;left:-120%;width:55%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.13),transparent);
+  animation:scanSheen 6s ease-in-out infinite 1.8s;
+  z-index:3;pointer-events:none;
+}
+.flag-frame:after{
+  inset:0!important;border-radius:0!important;
+  background:linear-gradient(160deg,rgba(255,255,255,.17) 0%,transparent 38%,rgba(0,0,0,.04) 100%)!important;
+}
+.flag-img{
+  background:#0f172a!important;border:none!important;border-radius:0!important;
+  width:100%!important;height:auto!important;aspect-ratio:4/3;
+  object-fit:cover!important;
+  filter:saturate(1.18) contrast(1.07) brightness(1.02);
+  animation:flagBreath 5s ease-in-out infinite;
+}
+#gfl{width:100%!important;height:auto!important;border-radius:0!important}
+.flag-code-fallback{background:#0f172a!important;color:#f1f5f9!important;border-radius:0!important;aspect-ratio:4/3}
+@keyframes scanSheen{
+  0%,100%{left:-120%;opacity:0}8%{opacity:1}88%{opacity:1;left:150%}95%{opacity:0;left:150%}
+}
+@keyframes flagBreath{
+  0%,100%{transform:scale(1)}50%{transform:scale(1.016)}
+}
+/* Timer danger pulse */
+@keyframes timerPulse{0%,100%{transform:scale(1)}45%{transform:scale(1.24)}}
+.game-time.danger{animation:timerPulse .46s ease-in-out infinite}
+/* Confetti */
+@keyframes cfettiFall{0%{opacity:1;transform:translateY(-10px) rotate(0deg)}100%{opacity:0;transform:translateY(90vh) rotate(660deg)}}
+.cfetti{position:fixed;top:0;z-index:600;pointer-events:none;border-radius:2px;animation:cfettiFall linear forwards}
+/* Result grade glow */
+.result-hero.grade-s{border-color:rgba(251,191,36,.5)!important;box-shadow:0 0 52px rgba(251,191,36,.26),0 0 90px rgba(251,191,36,.1) inset!important}
+.result-hero.grade-a{border-color:rgba(34,197,94,.45)!important;box-shadow:0 0 44px rgba(34,197,94,.2)!important}
+.result-hero.grade-f{border-color:rgba(107,114,128,.28)!important;box-shadow:0 0 18px rgba(107,114,128,.1)!important}
+/* Grade badge reveal */
+@keyframes gradeReveal{0%{opacity:0;transform:scale(0.3) rotate(-12deg)}60%{transform:scale(1.2) rotate(5deg)}100%{opacity:1;transform:scale(1) rotate(0deg)}}
+.grade-anim{animation:gradeReveal .55s cubic-bezier(.2,.8,.4,1.2) both}
+/* Score count-up */
+@keyframes scoreUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.score-anim{animation:scoreUp .4s ease .3s both}
+/* Combo badge */
+@keyframes comboBurst{0%{opacity:0;transform:translateX(-50%) scale(.5)}55%{transform:translateX(-50%) scale(1.14)}100%{opacity:1;transform:translateX(-50%) scale(1)}}
+#combo-badge{position:fixed;top:16%;left:50%;transform:translateX(-50%);z-index:503;pointer-events:none;padding:6px 20px;border-radius:999px;font-size:15px;font-weight:900;letter-spacing:.3px;display:none;box-shadow:0 8px 28px rgba(0,0,0,.4)}
+#combo-badge.show{display:block;animation:comboBurst .32s ease forwards}
+.combo-ok{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
+.combo-wow{background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff}
+/* 캐릭터 반응 */
+@keyframes charBounce{0%{opacity:0;transform:scale(.4) translateY(16px)}40%{transform:scale(1.32) translateY(-10px)}65%{transform:scale(.96) translateY(3px)}82%{transform:scale(1.08)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes charShake{0%{opacity:0;transform:scale(.5)}25%{transform:scale(1.1) rotate(-8deg)}50%{transform:scale(1) rotate(6deg)}75%{transform:scale(1.04) rotate(-3deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes charFade{0%{opacity:1}80%{opacity:1}100%{opacity:0}}
+#char-react{position:fixed;left:max(4px,calc(50vw - 294px));top:30%;z-index:502;pointer-events:none;width:78px;height:107px;display:none;filter:drop-shadow(0 4px 20px rgba(0,0,0,.6))}
+#char-react.cr-ok{display:block;animation:charBounce .58s cubic-bezier(.2,.8,.4,1.2) forwards,charFade .4s ease 0.9s forwards}
+#char-react.cr-no{display:block;animation:charShake .52s ease forwards,charFade .4s ease 0.85s forwards}
+/* 결과 캐릭터 */
+#res-char{width:140px;height:193px;margin:4px auto 10px;display:block;position:relative;z-index:1}
+@keyframes resCharPop{0%{opacity:0;transform:scale(.25) rotate(-18deg)}60%{transform:scale(1.24) rotate(6deg)}80%{transform:scale(.96) rotate(-2deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.res-char-anim{animation:resCharPop .55s cubic-bezier(.2,.8,.4,1.2) .15s both}
+/* 결과 등급 detail 메시지 */
+.res-flavor{font-size:12px;color:#7dd3fc;margin:4px 0 6px;font-weight:600;letter-spacing:.2px;position:relative;z-index:1}
+/* Share card modal */
+.share-overlay{position:fixed;inset:0;background:rgba(2,6,23,.92);z-index:1200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;backdrop-filter:blur(8px)}
+.share-preview{max-width:min(400px,88vw);border-radius:16px;box-shadow:0 28px 64px rgba(0,0,0,.65);display:block}
+.share-btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.share-action-btn{padding:12px 22px;border-radius:11px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.share-action-btn:active{opacity:.8}
+.share-dl-btn{background:#2563eb;color:#fff}
+.share-close-btn{background:transparent;border:1px solid #475569!important;border:none;color:#94a3b8}
+@keyframes shareModalIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.share-overlay{animation:shareModalIn .22s ease}
+
+/* ===== SPLASH SCREEN ===== */
+#s-splash{position:fixed;inset:0;z-index:9999;background:#061829;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .7s ease,visibility .7s ease}
+#s-splash.out{opacity:0;visibility:hidden;pointer-events:none}
+.sp-globe{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#38bdf8 0%,#1d4ed8 45%,#0c3060 100%);box-shadow:0 0 40px #38bdf855,0 0 80px #1d4ed822;position:relative;overflow:hidden;margin-bottom:22px;animation:sp-pulse 2s ease-in-out infinite}
+.sp-globe::after{content:'';position:absolute;left:18%;top:32%;width:64%;height:32%;border-radius:40%;background:#22c55e99}
+.sp-globe-line{position:absolute;inset:0;border-radius:50%;border:2px solid #7dd3fc33}
+.sp-globe-line:nth-child(1){top:30%;height:40%;clip-path:ellipse(50% 50% at 50% 50%)}
+@keyframes sp-pulse{0%,100%{box-shadow:0 0 30px #38bdf844}50%{box-shadow:0 0 55px #38bdf877,0 0 90px #1d4ed833}}
+.sp-title{font-size:26px;font-weight:900;color:#f1f5f9;letter-spacing:-1px;margin-bottom:3px;text-align:center}
+.sp-sub{font-size:12px;color:#64748b;margin-bottom:26px;text-align:center}
+.sp-modes{display:flex;gap:24px;margin-bottom:30px}
+.sp-mode{display:flex;flex-direction:column;align-items:center;gap:5px;opacity:0;animation:sp-fadein .5s ease forwards}
+.sp-mode:nth-child(1){animation-delay:.25s}
+.sp-mode:nth-child(2){animation-delay:.5s}
+.sp-mode:nth-child(3){animation-delay:.75s}
+.sp-mode-icon{font-size:26px;line-height:1}
+.sp-mode-lbl{font-size:10px;color:#475569;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+@keyframes sp-fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sp-bar-wrap{width:148px;height:3px;background:#1e293b;border-radius:2px;overflow:hidden}
+.sp-bar{height:100%;width:0;background:linear-gradient(90deg,#3b82f6,#818cf8);border-radius:2px;animation:sp-load 2s ease-out forwards}
+@keyframes sp-load{0%{width:0}55%{width:65%}80%{width:88%}100%{width:100%}}
+
 </style>
+
+<div id="s-splash" role="status" aria-label="Loading">
+  <div class="sp-globe"></div>
+  <div class="sp-title">60s World Quiz</div>
+  <div class="sp-sub">세계를 탐험하는 60초 퀴즈</div>
+  <div class="sp-modes">
+    <div class="sp-mode"><div class="sp-mode-icon">🏁</div><div class="sp-mode-lbl">국기</div></div>
+    <div class="sp-mode"><div class="sp-mode-icon">🏛️</div><div class="sp-mode-lbl">수도</div></div>
+    <div class="sp-mode"><div class="sp-mode-icon">🗺️</div><div class="sp-mode-lbl">랜드마크</div></div>
+  </div>
+  <div class="sp-bar-wrap"><div class="sp-bar"></div></div>
+</div>
 
 <div id="app">
 
 <!-- Home -->
 <div id="s-home" class="scr on">
+  <div id="home-streak" style="display:none;align-items:center;justify-content:center;gap:4px;padding:5px 14px;margin:6px auto 0;width:fit-content;background:linear-gradient(135deg,#f59e0b22,#ef444422);border:1px solid #f59e0b55;border-radius:999px;font-size:13px;font-weight:700;color:#fbbf24"></div>
   <div class="lang-row">
+    <button class="home-audio-btn" id="home-audio-btn" onclick="toggleBgm()">BGM ON</button>
     <button class="lbtn on" id="lb-ko" onclick="setLang('ko')">한국어</button>
     <button class="lbtn" id="lb-en" onclick="setLang('en')">EN</button>
-    <button class="lbtn" id="lb-zh" onclick="setLang('zh')">中文</button>
   </div>
   <div class="hero" style="text-align:center">
-    <div class="version-badge">V4.6</div>
-    <div class="hero-planet">🌍</div>
+    <div class="hero-planet">
+      <div class="css-globe" aria-hidden="true">
+        <img class="earth-photo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Land_shallow_topo_2048.jpg/1280px-Land_shallow_topo_2048.jpg" alt="">
+      </div>
+      <canvas id="globe3d" width="352" height="352" aria-label="rotating globe"></canvas>
+    </div>
     <div id="h-title" style="font-size:22px;font-weight:900;color:var(--txt);margin-bottom:3px"></div>
     <div id="h-sub" style="font-size:12px;color:#cbd5e1"></div>
-    <div class="pill-row">
-      <span class="pill" id="h-pill1"></span>
-      <span class="pill" id="h-pill2"></span>
-      <span class="pill" id="h-pill3"></span>
+  </div>
+  <div class="card traveler-card">
+    <div class="traveler-mark" aria-hidden="true">
+      <div class="tv-avatar">
+        <img src="https://i.pravatar.cc/150?img=53" alt="">
+      </div>
+    </div>
+    <div class="traveler-copy">
+      <div id="h-nl" class="traveler-label"></div>
+      <div class="traveler-input-wrap"><span class="traveler-input-icon">🧭</span><input id="hn" class="traveler-input" maxlength="12" oninput="chk()"></div>
+      <div id="h-nh" class="traveler-hint"></div>
     </div>
   </div>
-  <div class="qtab">
-    <button class="qtab-btn on" id="qt-f" onclick="setQT('flag')">🚩 <span id="qt-f-t"></span></button>
-    <button class="qtab-btn" id="qt-l" onclick="setQT('land')">🏛️ <span id="qt-l-t"></span></button>
-  </div>
-  <div class="diff-row">
-    <button class="dbtn on" id="df-easy" onclick="setDiff('easy')">🌱 <span id="df-easy-t"></span></button>
-    <button class="dbtn" id="df-normal" onclick="setDiff('normal')">🌍 <span id="df-normal-t"></span></button>
-    <button class="dbtn" id="df-hard" onclick="setDiff('hard')">🔥 <span id="df-hard-t"></span></button>
-  </div>
-  <div class="card">
-    <div id="h-nl" style="font-size:12px;color:var(--mut);margin-bottom:7px;font-weight:500"></div>
-    <input id="hn" maxlength="12" oninput="chk()">
-  </div>
-  <div id="h-ml" style="font-size:12px;color:var(--mut);margin-bottom:8px;font-weight:500"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px">
+  <div class="setup-label step-label"><span class="step-num">1</span><span id="h-qt-label"></span><span class="step-help" id="step1-help"></span></div>
+  <div class="qtab qtab-3">
+    <button class="qtab-btn on" id="qt-f" onclick="setQT('flag')">
+      <span class="quiz-shot flag-shot" aria-hidden="true">
+        <div class="flag-grid">
+          <img class="fg-img" src="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/br.svg" alt="">
+          <img class="fg-img" src="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/jp.svg" alt="">
+          <img class="fg-img" src="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/de.svg" alt="">
+          <img class="fg-img" src="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/us.svg" alt="">
+        </div>
+      </span>
+      <span id="qt-f-t"></span>
+    </button>
+    <button class="qtab-btn" id="qt-cap" onclick="setQT('cap')">
+      <span class="quiz-shot cap-shot" aria-hidden="true">
+        <div class="cap-flag-half">
+          <img id="qt-cap-flag" src="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/fr.svg" alt="" class="cap-flag-img">
+        </div>
+        <div class="cap-ask-half">
+          <div class="cap-ask-q">?</div>
+          <div class="cap-ask-label" id="cap-ask-label-el">수도</div>
+        </div>
+      </span>
+      <span id="qt-cap-t"></span>
+    </button>
+    <button class="qtab-btn" id="qt-l" onclick="setQT('land')">
+      <span class="quiz-shot land-shot" aria-hidden="true">
+        <img id="qt-land-img" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Eiffel_Tower_from_the_Tour_Montparnasse_3%2C_Paris_May_2014.jpg?width=320" alt="">
+      </span>
+      <span id="qt-l-t"></span>
+    </button>
+</div>
+  <div class="selection-status" id="selection-status"></div>
+  <div class="setup-label step-label"><span class="step-num">2</span><span id="h-ml"></span><span class="step-help" id="step2-help"></span></div>
+  <div class="setup-grid">
     <div class="mc" id="ms" onclick="startG('survival')" >
-      <div style="font-size:28px;margin-bottom:8px">❤️</div>
-      <div id="ms-t" style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:3px"></div>
-      <div id="ms-d" style="font-size:11px;color:var(--mut);margin-bottom:8px;line-height:1.4"></div>
-      <span style="font-size:10px;color:#f87171;background:#ef444418;padding:2px 8px;border-radius:20px">❤️❤️❤️</span>
+      <div class="mode-visual mode-life">
+        <svg class="mode-illus" viewBox="0 0 160 56" xmlns="http://www.w3.org/2000/svg">
+          <defs><radialGradient id="hg" cx="50%" cy="60%" r="65%"><stop offset="0%" stop-color="#ef4444" stop-opacity=".32"/><stop offset="100%" stop-color="#7f1d1d" stop-opacity="0"/></radialGradient></defs>
+          <ellipse cx="80" cy="34" rx="75" ry="20" fill="url(#hg)"/>
+          <path transform="translate(25,11) scale(.92)" d="M16 28C6 21 0 14 0 8a9 9 0 0 1 16-5A9 9 0 0 1 32 8c0 6-6 13-16 20z" fill="#f87171" filter="drop-shadow(0 3px 6px rgba(239,68,68,.5))"/>
+          <path transform="translate(64,7)" d="M16 30C5 22 0 15 0 8a9 9 0 0 1 16-5A9 9 0 0 1 32 8c0 7-6 14-16 22z" fill="#ef4444" filter="drop-shadow(0 4px 8px rgba(239,68,68,.55))"/>
+          <path transform="translate(105,11) scale(.92)" d="M16 28C6 21 0 14 0 8a9 9 0 0 1 16-5A9 9 0 0 1 32 8c0 6-6 13-16 20z" fill="#f87171" filter="drop-shadow(0 3px 6px rgba(239,68,68,.5))"/>
+          <text x="80" y="52" text-anchor="middle" font-size="8.5" fill="#fecdd3" font-weight="800" font-family="-apple-system,Arial,sans-serif" letter-spacing="2">× 3 LIVES</text>
+        </svg>
+      </div>
+      <div id="ms-t" class="mc-title"></div>
+      <div id="ms-d" class="mc-desc"></div>
+      <div id="ms-r" class="mode-record"></div>
     </div>
     <div class="mc" id="mc" onclick="startG('challenge')" >
-      <div style="font-size:28px;margin-bottom:8px">🎯</div>
-      <div id="mc-t" style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:3px"></div>
-      <div id="mc-d" style="font-size:11px;color:var(--mut);margin-bottom:8px;line-height:1.4"></div>
-      <span id="mc-b" style="font-size:10px;color:#4ade80;background:#22c55e18;padding:2px 8px;border-radius:20px"></span>
+      <div class="mode-visual mode-challenge">
+        <svg class="mode-illus" viewBox="0 0 160 56" xmlns="http://www.w3.org/2000/svg">
+          <defs><radialGradient id="cg" cx="50%" cy="60%" r="65%"><stop offset="0%" stop-color="#3b82f6" stop-opacity=".32"/><stop offset="100%" stop-color="#1e3a5f" stop-opacity="0"/></radialGradient></defs>
+          <ellipse cx="80" cy="34" rx="75" ry="20" fill="url(#cg)"/>
+          <!-- Stopwatch body -->
+          <circle cx="80" cy="26" r="19" fill="rgba(15,38,92,.6)" stroke="#3b82f6" stroke-width="1.5"/>
+          <!-- Tick marks -->
+          <line x1="80" y1="9" x2="80" y2="12.5" stroke="#60a5fa" stroke-width="1.5"/>
+          <line x1="80" y1="39.5" x2="80" y2="43" stroke="#60a5fa" stroke-width="1.5"/>
+          <line x1="61" y1="26" x2="64.5" y2="26" stroke="#60a5fa" stroke-width="1.5"/>
+          <line x1="95.5" y1="26" x2="99" y2="26" stroke="#60a5fa" stroke-width="1.5"/>
+          <!-- Crown stem -->
+          <rect x="77" y="4" width="6" height="5" rx="2" fill="#3b82f6"/>
+          <line x1="74" y1="5.5" x2="77" y2="7" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="86" y1="5.5" x2="83" y2="7" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Hands -->
+          <line x1="80" y1="26" x2="80" y2="13" stroke="#e0f2fe" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="80" y1="26" x2="92" y2="31" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="80" cy="26" r="2.5" fill="#bfdbfe"/>
+          <text x="80" y="52" text-anchor="middle" font-size="8.5" fill="#bae6fd" font-weight="800" font-family="-apple-system,Arial,sans-serif" letter-spacing="2">60 SECONDS</text>
+        </svg>
+      </div>
+      <div id="mc-t" class="mc-title"></div>
+      <div id="mc-d" class="mc-desc"></div>
+      <span id="mc-b" style="display:none"></span>
+      <div id="mc-r" class="mode-record"></div>
     </div>
-    <div class="mc daily" id="md" onclick="startDaily()" >
-      <div style="font-size:30px;margin-bottom:7px">🧭</div>
+    <div class="mc daily" id="md" onclick="startDaily()" style="display:none">
+      <div class="daily-mark">
+        <div class="mode-art"><span class="icon-compass art-icon"></span></div>
+        <span class="daily-num">10</span>
+      </div>
       <div id="md-t" style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:3px"></div>
       <div id="md-d" style="font-size:11px;color:#cbd5e1;line-height:1.45"></div>
       <span class="daily-tag" id="md-b"></span>
+      <div id="md-r" class="mode-record"></div>
     </div>
   </div>
-  <div id="h-tip" style="font-size:11px;color:#475569;text-align:center;margin-bottom:10px"></div>
-  <button class="bs" onclick="openLB()" id="h-lb"></button>
   <div id="hpv" style="display:none;margin-top:10px" class="card">
     <div id="h-top" style="font-size:11px;color:var(--mut);margin-bottom:7px;font-weight:500"></div>
     <div id="hpl"></div>
@@ -171,20 +1071,22 @@ body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 1
 
 <!-- Game -->
 <div id="s-game" class="scr">
+  <div id="combo-badge"></div>
   <div id="gw">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-      <div>
-        <div id="gb" style="font-size:11px;padding:2px 9px;border-radius:20px;background:#6366f115;color:#a5b4fc;font-weight:500;display:inline-block;margin-bottom:4px"></div>
+    <div class="game-head">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="goHome()" id="go-home-btn" style="background:none;border:none;color:var(--mut);font-size:18px;cursor:pointer;padding:2px 4px;line-height:1;border-radius:6px;transition:color .2s" title="Home">🏠</button>
+        <div id="gb" class="game-badge"></div>
         <div id="gl" style="display:flex;gap:3px"></div>
         <div id="gpw" style="display:none">
           <div class="pr" style="width:120px"><div class="pf" id="gpf"></div></div>
-          <div id="gpt" style="font-size:10px;color:var(--dim);margin-top:2px"></div>
+          <div id="gpt" class="game-progress-text"></div>
         </div>
       </div>
-      <div style="text-align:right">
-        <div id="gsc" style="font-size:17px;font-weight:700;color:var(--acc)">0</div>
-        <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end">
-          <div id="tnum" style="font-size:13px;font-weight:700;color:#22c55e">15</div>
+      <div class="game-scorebox">
+        <div id="gsc" class="game-score">0</div>
+        <div class="game-timebox">
+          <div id="tnum" class="game-time">15</div>
           <div id="gsp" style="display:none;font-size:10px;color:#fbbf24">⚡</div>
         </div>
       </div>
@@ -195,17 +1097,16 @@ body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 1
     </div>
     <div id="gto" style="display:none;background:#450a0a;border:1px solid #ef4444;border-radius:8px;padding:8px;text-align:center;color:#fca5a5;font-size:12px;font-weight:600;margin-bottom:8px"></div>
     <!-- Question card -->
-    <div style="background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:18px 14px 12px;text-align:center;margin-bottom:12px">
+    <div class="question-card">
       <div id="qtitle" class="q-title"></div>
       <!-- Flag mode -->
       <div id="q-flag">
-        <div class="flag-frame"><span id="gfl" style="display:block;width:200px;height:133px;margin:0 auto;border-radius:7px;border:1px solid #475569;background-size:cover;background-position:center"></span></div>
+        <div class="flag-frame"><img id="gfl" class="flag-img" alt="국기 문제"><div id="gfl-fallback" class="flag-code-fallback" style="display:none"></div></div>
       </div>
       <!-- Landmark mode -->
       <div id="q-land" style="display:none">
         <div class="lm-wrap">
-          <img id="gimg" class="lm-img" src="" alt="" loading="eager"
-            onerror="landmarkImgFail(this)">
+          <img id="gimg" class="lm-img" alt="" loading="eager">
           <div id="glm-fb" style="display:none" class="lm-fb photo-fb">
             <div id="glm-loader" class="photo-loader"></div>
             <div id="glm-name" style="font-size:13px;color:var(--mut)"></div>
@@ -214,10 +1115,21 @@ body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 1
           <div class="lm-badge" id="glm-badge"></div>
         </div>
       </div>
-      <div id="grg" style="margin-top:8px;font-size:11px;color:#475569"></div>
+      <!-- Capital mode -->
+      <div id="q-cap" style="display:none">
+        <div class="cap-card-c">
+          <img id="gcap-img" class="cap-img" alt="">
+          <div id="gcap-nophoto" class="cap-no-photo"></div>
+          <div class="cap-img-overlay">
+            <div id="gcap-city" class="cap-city"></div>
+            <div id="gcap-hint" class="cap-hint"></div>
+          </div>
+        </div>
+      </div>
+      <div id="grg" class="question-meta"></div>
     </div>
     <div id="gopts"></div>
-    <div id="gfb" style="display:none;animation:fd .25s ease" class="card">
+    <div id="gfb" style="display:none;animation:fd .25s ease" class="card feedback-card">
       <div id="gfm" style="font-size:14px;font-weight:600;margin-bottom:3px"></div>
       <div id="gfs" style="font-size:12px;color:var(--mut)"></div>
     </div>
@@ -227,30 +1139,32 @@ body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 1
 
 <!-- Results -->
 <div id="s-res" class="scr">
-  <div class="card" style="text-align:center;margin-bottom:10px">
+  <div class="card result-hero">
+    <div id="rmode" class="result-mode"></div>
     <div id="rem" style="font-size:44px;margin-bottom:3px"></div>
     <div id="rgr" style="font-size:48px;font-weight:900;margin-bottom:3px"></div>
     <div id="rmsg" style="font-size:12px;color:var(--mut);margin-bottom:2px"></div>
     <div id="rtitle" class="result-title"></div>
     <div id="rnk" style="font-size:12px;color:var(--dim);margin-bottom:5px"></div>
     <div id="rsc" style="font-size:28px;font-weight:700;color:var(--txt);margin-bottom:3px"></div>
+    <div id="rrate" class="result-rate"></div>
     <div id="rnew" style="display:none;font-size:12px;color:#fbbf24;font-weight:600;margin-bottom:5px">🎉</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:7px">
-      <div style="background:var(--bg);border-radius:7px;padding:8px">
+    <div class="result-stats">
+      <div class="result-stat">
         <div id="rco" style="font-size:20px;font-weight:700;color:#4ade80"></div>
         <div id="r-c" style="font-size:10px;color:var(--dim)"></div>
       </div>
-      <div style="background:var(--bg);border-radius:7px;padding:8px">
+      <div class="result-stat">
         <div id="rwr" style="font-size:20px;font-weight:700;color:#f87171"></div>
         <div id="r-w" style="font-size:10px;color:var(--dim)"></div>
       </div>
-      <div style="background:var(--bg);border-radius:7px;padding:8px">
+      <div class="result-stat">
         <div id="rti" style="font-size:20px;font-weight:700;color:#fbbf24"></div>
         <div id="r-t" style="font-size:10px;color:var(--dim)"></div>
       </div>
     </div>
   </div>
-  <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
+  <div class="card review-panel" style="padding:0;overflow:hidden;margin-bottom:10px">
     <button onclick="togW()" style="width:100%;padding:11px 15px;background:transparent;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
       <span id="rwl" style="font-size:13px;font-weight:500;color:#f87171"></span>
       <span id="rwc" style="color:var(--dim)">▼</span>
@@ -289,7 +1203,13 @@ body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 1
 
 </div>
 <button class="voicebtn" id="voicebtn" onclick="toggleVoice()">🔈</button>
-<button class="sndbtn" id="sndbtn" onclick="toggleSnd()">🔊</button>
+<div class="audio-panel" id="audio-panel" role="dialog" aria-labelledby="audio-panel-title">
+  <div class="audio-head"><span id="audio-panel-title">오디오 설정</span><button class="audio-close" id="audio-close-btn" onclick="toggleAudioPanel(false)" aria-label="닫기">&times;</button></div>
+  <div class="audio-row"><span>BGM</span><input id="bgm-volume" type="range" min="0" max="100" value="35" oninput="setBgmVolume(this.value)"><button id="bgm-toggle" class="audio-toggle" onclick="toggleBgm()">ON</button></div>
+  <div class="audio-row"><span>효과음</span><input id="sfx-volume" type="range" min="0" max="100" value="70" oninput="setSfxVolume(this.value)"><button id="sfx-toggle" class="audio-toggle" onclick="toggleSfx()">ON</button></div>
+  <div class="audio-track" id="audio-track">홈 음악 · World Journey</div>
+</div>
+<button class="sndbtn" id="sndbtn" onclick="toggleAudioPanel()" aria-label="Audio Settings">🔊</button>
 
 <script>
 // ============================================================
@@ -297,14 +1217,16 @@ body{background:radial-gradient(circle at 20% 0%,#1d4ed8 0,#0f172a 38%,#020617 1
 // ============================================================
 const T = {
   ko:{
-    title:'세계 국기 & 랜드마크 퀴즈', sub:'195개국 국기 · 200+ 세계 랜드마크',
-    nick:'닉네임', nick_ph:'닉네임 입력 후 모드를 선택하세요',
-    mode:'게임 모드 선택', qt_flag:'국기 퀴즈', qt_land:'랜드마크',
-    surv:'서바이벌', surv_d:'오답 3번이면\n게임 종료',
-    chal:'챌린지', chal_df:'랜덤 30개국\n완주 도전', chal_dl:'랜덤 20개\n도전',
-    chal_bf:'🎯 30문제', chal_bl:'🎯 20문제',
+    title:'60s 월드 퀴즈', sub:'60초 감각으로 즐기는 국기와 랜드마크 세계 퀴즈',
+    nick:'여행자 이름', nick_ph:'비워두면 자동 이름으로 시작',
+    nick_hint:'기록에 표시될 이름이에요',
+    mode:'플레이 모드', quiz_type:'게임 종류', difficulty:'난이도 선택', best_surv:'최고 점수', best_chal:'최고 기록', best_daily:'오늘 최고',
+    qt_flag:'국기 맞추기', qt_cap:'수도 맞추기', qt_land:'랜드마크 맞추기',
+    surv:'서바이벌', surv_d:'목숨 3개로\n오래 버티기',
+    chal:'60초 러시', chal_df:'60초 안에\n최대한 많이 맞히기', chal_dl:'60초 안에\n최대한 많이 맞히기',
+    chal_bf:'⏱ 60초 러시', chal_bl:'⏱ 60초 러시',
     tip:'⏱ 문제당 10초 · ⚡ 빠른 정답 +5점 보너스',
-    lb_btn:'🏅 글로벌 순위 보기', top3:'🏅 서바이벌 TOP 3',
+    lb_btn:'기록 보기', top3:'서바이벌 TOP 3',
     timeout:'⏰ 시간 초과!', ans_ok:'✅ 정답! +10점!',
     ans_ob:'✅ 정답! ⚡ 스피드 보너스 +5점!',
     ans_no:'❌ 오답! 정답: ', ans_to:'⏰ 시간 초과! 정답: ',
@@ -315,28 +1237,32 @@ const T = {
     wr_rev:'❌ 오답 리뷰', my_a:'내 답: ', rt_a:'정답: ',
     share:'🔗 결과 공유하기', copied:'✅ 복사됨!',
     retry:'🔄 다시 도전', home:'🏠 홈으로',
-    lb_ti:'🏅 글로벌 순위', lb_su:'공유 리더보드',
-    surv_t:'❤️ 서바이벌', chal_t:'🎯 챌린지',
+    lb_ti:'기록 보기', lb_su:'내가 세운 최고 기록',
+    surv_t:'🌍 서바이벌', chal_t:'⏱ 60초 러시',
     no_rec:'기록이 없습니다', play:'🎮 게임하기',
-    daily:'오늘의 도전', daily_d:'국기와 랜드마크 10문제\n매일 바뀌는 세계여행', daily_b:'🧭 오늘 10문제',
+    daily:'오늘의 도전', daily_d:'매일 바뀌는\n10문제 미션', daily_b:'오늘 10문제',
     pill1:'학생 모드', pill2:'실제 랜드마크 사진', pill3:'음성 문제 읽기',
     title_S:'월드 마스터', title_A:'랜드마크 탐험가', title_B:'국기 여행자', title_C:'세계여행 입문자', title_D:'여행 준비생',
     wrong_retry:'오답만 다시 풀기', review_hint:'복습 포인트', daily_done:'오늘의 도전 완료',
     voice_on:'문제 음성 켜짐', voice_off:'문제 음성 꺼짐', guest:'꼬마여행자',
+    audio_settings:'오디오 설정', close:'닫기', go_home:'홈으로',
     auto_move:'자동으로 다음 문제로 이동합니다', min:'분', sec:'초',
     reg:{Asia:'아시아',Europe:'유럽',Africa:'아프리카',Americas:'아메리카',Oceania:'오세아니아'},
     land_in:'이 랜드마크는 어느 나라에 있을까요?',
+    cap_in:'이 나라의 수도는?',
     flag_in:'이 국기는 어느 나라일까요?',
     diff_easy:'쉬움', diff_normal:'보통', diff_hard:'어려움',
     time_easy:'15초 · 입문', time_normal:'10초 · 기본', time_hard:'7초 · 고수',
   },
   zh:{
-    title:'世界国旗 & 地标测验', sub:'195个国家国旗 · 200+个世界地标',
-    nick:'昵称', nick_ph:'输入昵称后选择模式',
-    mode:'选择游戏模式', qt_flag:'国旗测验', qt_land:'地标测验',
-    surv:'生存模式', surv_d:'答错3次\n游戏结束',
-    chal:'挑战模式', chal_df:'挑战30个\n随机国家', chal_dl:'挑战20个\n随机地标',
-    chal_bf:'🎯 30题', chal_bl:'🎯 20题',
+    title:'60s 世界问答', sub:'挑战世界国旗和地标',
+    nick:'旅行者名字', nick_ph:'留空则自动开始',
+    nick_hint:'会显示在记录中',
+    mode:'选择游戏模式', quiz_type:'测验类型', difficulty:'选择难度', best_surv:'最高分', best_chal:'最佳记录', best_daily:'今日最佳',
+    qt_flag:'国旗测验', qt_cap:'首都测验', qt_land:'地标测验',
+    surv:'生存模式', surv_d:'3条生命\n挑战最高分',
+    chal:'60秒冲刺', chal_df:'60秒内\n答对越多越好', chal_dl:'60秒内\n答对越多越好',
+    chal_bf:'⏱ 60秒冲刺', chal_bl:'⏱ 60秒冲刺',
     tip:'⏱ 每题10秒 · ⚡ 快速回答奖励 +5分',
     lb_btn:'🏅 查看全球排名', top3:'🏅 生存 TOP 3',
     timeout:'⏰ 时间到！', ans_ok:'✅ 正确！+10分！',
@@ -350,28 +1276,32 @@ const T = {
     share:'🔗 分享结果', copied:'✅ 已复制！',
     retry:'🔄 再次挑战', home:'🏠 返回主页',
     lb_ti:'🏅 全球排名', lb_su:'共享排行榜',
-    surv_t:'❤️ 生存', chal_t:'🎯 挑战',
+    surv_t:'🌍 生存', chal_t:'⏱ 60秒冲刺',
     no_rec:'暂无记录', play:'🎮 开始游戏',
-    daily:'今日挑战', daily_d:'国旗和地标10题\n每日更新的世界旅行', daily_b:'🧭 今日10题',
+    daily:'今日挑战', daily_d:'国旗+地标10题\n每日随机记录挑战', daily_b:'🧭 今日10题',
     pill1:'学生模式', pill2:'真实地标照片', pill3:'语音读题',
     title_S:'世界大师', title_A:'地标探险家', title_B:'国旗旅行者', title_C:'世界旅行入门者', title_D:'旅行准备生',
     wrong_retry:'只练错题', review_hint:'复习重点', daily_done:'今日挑战完成',
     voice_on:'语音开启', voice_off:'语音关闭', guest:'小小旅行家',
+    audio_settings:'音频设置', close:'关闭', go_home:'返回主页',
     auto_move:'自动进入下一题', min:'分', sec:'秒',
     reg:{Asia:'亚洲',Europe:'欧洲',Africa:'非洲',Americas:'美洲',Oceania:'大洋洲'},
     land_in:'这是哪个国家的地标？',
+    cap_in:'这个国家的首都是？',
     flag_in:'这个国旗是哪个国家的？',
     diff_easy:'简单', diff_normal:'普通', diff_hard:'困难',
     time_easy:'15秒 · 入门', time_normal:'10秒 · 标准', time_hard:'7秒 · 高手',
   },
   en:{
-    title:'World Flag & Landmark Quiz', sub:'195 flags · 200+ world landmarks',
-    nick:'Nickname', nick_ph:'Enter a nickname, then choose a mode',
-    mode:'Choose game mode', qt_flag:'Flag Quiz', qt_land:'Landmarks',
-    surv:'Survival', surv_d:'3 wrong answers\nand it is over',
-    chal:'Challenge', chal_df:'Random countries\nfinish the route', chal_dl:'Random landmarks\nfinish the route',
-    chal_bf:'🎯 30 Questions', chal_bl:'🎯 20 Questions',
-    tip:'⏱ Time changes by difficulty · ⚡ Fast answer +5 bonus',
+    title:'60s World Quiz', sub:'A fast world quiz with flags and landmarks',
+    nick:'Traveler name', nick_ph:'Leave blank for an auto name',
+    nick_hint:'Shown on your records',
+    mode:'Choose game mode', quiz_type:'Quiz type', difficulty:'Choose difficulty', best_surv:'Best score', best_chal:'Best record', best_daily:'Daily best',
+    qt_flag:'Flag Quiz', qt_cap:'Capitals', qt_land:'Landmarks',
+    surv:'Survival', surv_d:'3 lives to beat\nyour best score',
+    chal:'60s Rush', chal_df:'Answer as many as you can\nin 60 seconds', chal_dl:'Answer as many as you can\nin 60 seconds',
+    chal_bf:'⏱ 60s Rush', chal_bl:'⏱ 60s Rush',
+    tip:'⏱ 10s per question · ⚡ Fast answer +5 bonus',
     lb_btn:'🏅 View Rankings', top3:'🏅 Survival TOP 3',
     timeout:'⏰ Time up!', ans_ok:'✅ Correct! +10!',
     ans_ob:'✅ Correct! ⚡ Speed bonus +5!',
@@ -384,20 +1314,28 @@ const T = {
     share:'🔗 Share Result', copied:'✅ Copied!',
     retry:'🔄 Retry', home:'🏠 Home',
     lb_ti:'🏅 Rankings', lb_su:'Shared leaderboard',
-    surv_t:'❤️ Survival', chal_t:'🎯 Challenge',
+    surv_t:'🌍 Survival', chal_t:'⏱ 60s Rush',
     no_rec:'No records yet', play:'🎮 Play',
-    daily:'Daily Challenge', daily_d:'10 flags and landmarks\na new route every day', daily_b:'🧭 Today’s 10',
+    daily:'Daily Challenge', daily_d:'10 flags + landmarks\na random record daily', daily_b:'🧭 Today’s 10',
     pill1:'Student mode', pill2:'Real landmark photos', pill3:'Voice questions',
     title_S:'World Master', title_A:'Landmark Explorer', title_B:'Flag Traveler', title_C:'World Trip Rookie', title_D:'Travel Trainee',
     wrong_retry:'Retry wrong answers', review_hint:'Review tip', daily_done:'Daily challenge complete',
     voice_on:'Voice on', voice_off:'Voice off', guest:'Little Explorer',
+    audio_settings:'Audio Settings', close:'Close', go_home:'Home',
     auto_move:'Moving to next question', min:'m', sec:'s',
     reg:{Asia:'Asia',Europe:'Europe',Africa:'Africa',Americas:'Americas',Oceania:'Oceania'},
     land_in:'Which country is this landmark in?',
+    cap_in:"What is this country's capital?",
     flag_in:'Which country does this flag belong to?',
     diff_easy:'Easy', diff_normal:'Normal', diff_hard:'Hard',
     time_easy:'15s · Beginner', time_normal:'10s · Standard', time_hard:'7s · Master',
   }
+};
+
+const UI_TEXT={
+  ko:{step1:'먼저 하나를 선택하세요',step2:'누르면 바로 시작합니다',selected:'선택됨',current:'현재 선택: '},
+  en:{step1:'Choose one first',step2:'Tap a mode to start',selected:'Selected',current:'Selected: '},
+  zh:{step1:'请先选择一种类型',step2:'点击模式即可开始',selected:'已选择',current:'当前选择：'}
 };
 
 // Chinese country names
@@ -406,7 +1344,9 @@ const ZH={af:'阿富汗',al:'阿尔巴尼亚',dz:'阿尔及利亚',ad:'安道尔
 // Flag data [code, name_ko, region]
 const C=[['af','아프가니스탄','Asia'],['al','알바니아','Europe'],['dz','알제리','Africa'],['ad','안도라','Europe'],['ao','앙골라','Africa'],['ag','앤티가바부다','Americas'],['ar','아르헨티나','Americas'],['am','아르메니아','Asia'],['au','호주','Oceania'],['at','오스트리아','Europe'],['az','아제르바이잔','Asia'],['bs','바하마','Americas'],['bh','바레인','Asia'],['bd','방글라데시','Asia'],['bb','바베이도스','Americas'],['by','벨라루스','Europe'],['be','벨기에','Europe'],['bz','벨리즈','Americas'],['bj','베냉','Africa'],['bt','부탄','Asia'],['bo','볼리비아','Americas'],['ba','보스니아헤르체고비나','Europe'],['bw','보츠와나','Africa'],['br','브라질','Americas'],['bn','브루나이','Asia'],['bg','불가리아','Europe'],['bf','부르키나파소','Africa'],['bi','부룬디','Africa'],['cv','카보베르데','Africa'],['kh','캄보디아','Asia'],['cm','카메룬','Africa'],['ca','캐나다','Americas'],['cf','중앙아프리카공화국','Africa'],['td','차드','Africa'],['cl','칠레','Americas'],['cn','중국','Asia'],['co','콜롬비아','Americas'],['km','코모로','Africa'],['cd','콩고민주공화국','Africa'],['cg','콩고공화국','Africa'],['cr','코스타리카','Americas'],['ci','코트디부아르','Africa'],['hr','크로아티아','Europe'],['cu','쿠바','Americas'],['cy','키프로스','Asia'],['cz','체코','Europe'],['dk','덴마크','Europe'],['dj','지부티','Africa'],['dm','도미니카','Americas'],['do','도미니카공화국','Americas'],['ec','에콰도르','Americas'],['eg','이집트','Africa'],['sv','엘살바도르','Americas'],['gq','적도기니','Africa'],['er','에리트레아','Africa'],['ee','에스토니아','Europe'],['sz','에스와티니','Africa'],['et','에티오피아','Africa'],['fj','피지','Oceania'],['fi','핀란드','Europe'],['fr','프랑스','Europe'],['ga','가봉','Africa'],['gm','감비아','Africa'],['ge','조지아','Asia'],['de','독일','Europe'],['gh','가나','Africa'],['gr','그리스','Europe'],['gd','그레나다','Americas'],['gt','과테말라','Americas'],['gn','기니','Africa'],['gw','기니비사우','Africa'],['gy','가이아나','Americas'],['ht','아이티','Americas'],['hn','온두라스','Americas'],['hu','헝가리','Europe'],['is','아이슬란드','Europe'],['in','인도','Asia'],['id','인도네시아','Asia'],['ir','이란','Asia'],['iq','이라크','Asia'],['ie','아일랜드','Europe'],['il','이스라엘','Asia'],['it','이탈리아','Europe'],['jm','자메이카','Americas'],['jp','일본','Asia'],['jo','요르단','Asia'],['kz','카자흐스탄','Asia'],['ke','케냐','Africa'],['ki','키리바시','Oceania'],['kp','북한','Asia'],['kr','대한민국','Asia'],['kw','쿠웨이트','Asia'],['kg','키르기스스탄','Asia'],['la','라오스','Asia'],['lv','라트비아','Europe'],['lb','레바논','Asia'],['ls','레소토','Africa'],['lr','라이베리아','Africa'],['ly','리비아','Africa'],['li','리히텐슈타인','Europe'],['lt','리투아니아','Europe'],['lu','룩셈부르크','Europe'],['mg','마다가스카르','Africa'],['mw','말라위','Africa'],['my','말레이시아','Asia'],['mv','몰디브','Asia'],['ml','말리','Africa'],['mt','몰타','Europe'],['mh','마셜제도','Oceania'],['mr','모리타니아','Africa'],['mu','모리셔스','Africa'],['mx','멕시코','Americas'],['fm','미크로네시아','Oceania'],['md','몰도바','Europe'],['mc','모나코','Europe'],['mn','몽골','Asia'],['me','몬테네그로','Europe'],['ma','모로코','Africa'],['mz','모잠비크','Africa'],['mm','미얀마','Asia'],['na','나미비아','Africa'],['nr','나우루','Oceania'],['np','네팔','Asia'],['nl','네덜란드','Europe'],['nz','뉴질랜드','Oceania'],['ni','니카라과','Americas'],['ne','니제르','Africa'],['ng','나이지리아','Africa'],['mk','북마케도니아','Europe'],['no','노르웨이','Europe'],['om','오만','Asia'],['pk','파키스탄','Asia'],['pw','팔라우','Oceania'],['pa','파나마','Americas'],['pg','파푸아뉴기니','Oceania'],['py','파라과이','Americas'],['pe','페루','Americas'],['ph','필리핀','Asia'],['pl','폴란드','Europe'],['pt','포르투갈','Europe'],['qa','카타르','Asia'],['ro','루마니아','Europe'],['ru','러시아','Europe'],['rw','르완다','Africa'],['kn','세인트키츠네비스','Americas'],['lc','세인트루시아','Americas'],['vc','세인트빈센트','Americas'],['ws','사모아','Oceania'],['sm','산마리노','Europe'],['st','상투메프린시페','Africa'],['sa','사우디아라비아','Asia'],['sn','세네갈','Africa'],['rs','세르비아','Europe'],['sc','세이셸','Africa'],['sl','시에라리온','Africa'],['sg','싱가포르','Asia'],['sk','슬로바키아','Europe'],['si','슬로베니아','Europe'],['sb','솔로몬제도','Oceania'],['so','소말리아','Africa'],['za','남아프리카공화국','Africa'],['ss','남수단','Africa'],['es','스페인','Europe'],['lk','스리랑카','Asia'],['sd','수단','Africa'],['sr','수리남','Americas'],['se','스웨덴','Europe'],['ch','스위스','Europe'],['sy','시리아','Asia'],['tw','대만','Asia'],['tj','타지키스탄','Asia'],['tz','탄자니아','Africa'],['th','태국','Asia'],['tl','동티모르','Asia'],['tg','토고','Africa'],['to','통가','Oceania'],['tt','트리니다드토바고','Americas'],['tn','튀니지','Africa'],['tr','터키','Asia'],['tm','투르크메니스탄','Asia'],['tv','투발루','Oceania'],['ug','우간다','Africa'],['ua','우크라이나','Europe'],['ae','아랍에미리트','Asia'],['gb','영국','Europe'],['us','미국','Americas'],['uy','우루과이','Americas'],['uz','우즈베키스탄','Asia'],['vu','바누아투','Oceania'],['ve','베네수엘라','Americas'],['vn','베트남','Asia'],['ye','예멘','Asia'],['zm','잠비아','Africa'],['zw','짐바브웨','Africa']];
 
-// Landmark data: 200+ real-photo targets. Images are loaded from Wikipedia/Wikimedia thumbnails at runtime.
+// Capital city data: [code -> Korean capital name]
+const CAP={af:'카불',al:'티라나',dz:'알제',ad:'안도라라바야',ao:'루안다',ag:'세인트존스',ar:'부에노스아이레스',am:'예레반',au:'캔버라',at:'빈',az:'바쿠',bs:'나소',bh:'마나마',bd:'다카',bb:'브리지타운',by:'민스크',be:'브뤼셀',bz:'벨모판',bj:'포르토노보',bt:'팀부',bo:'수크레',ba:'사라예보',bw:'하보로네',br:'브라질리아',bn:'반다르스리브가완',bg:'소피아',bf:'와가두구',bi:'부줌부라',cv:'프라이아',kh:'프놈펜',cm:'야운데',ca:'오타와',cf:'방기',td:'은자메나',cl:'산티아고',cn:'베이징',co:'보고타',km:'모로니',cg:'브라자빌',cd:'킨샤사',cr:'산호세',ci:'아비장',hr:'자그레브',cu:'아바나',cy:'니코시아',cz:'프라하',dk:'코펜하겐',dj:'지부티',dm:'로조',do:'산토도밍고',ec:'키토',eg:'카이로',sv:'산살바도르',gq:'말라보',er:'아스마라',ee:'탈린',sz:'음바바네',et:'아디스아바바',fj:'수바',fi:'헬싱키',fr:'파리',ga:'리브르빌',gm:'반줄',ge:'트빌리시',de:'베를린',gh:'아크라',gr:'아테네',gd:'세인트조지스',gt:'과테말라시티',gn:'코나크리',gw:'비사우',gy:'조지타운',ht:'포르토프랭스',hn:'테구시갈파',hu:'부다페스트',is:'레이캬비크',in:'뉴델리',id:'자카르타',ir:'테헤란',iq:'바그다드',ie:'더블린',il:'예루살렘',it:'로마',jm:'킹스턴',jp:'도쿄',jo:'암만',kz:'아스타나',ke:'나이로비',ki:'타라와',kw:'쿠웨이트시티',kg:'비슈케크',la:'비엔티안',lv:'리가',lb:'베이루트',ls:'마세루',lr:'몬로비아',ly:'트리폴리',li:'파두츠',lt:'빌뉴스',lu:'룩셈부르크',mg:'안타나나리보',mw:'릴롱궤',my:'쿠알라룸푸르',mv:'말레',ml:'바마코',mt:'발레타',mh:'마주로',mr:'누악쇼트',mu:'포트루이스',mx:'멕시코시티',fm:'팔리키르',md:'키시나우',mc:'모나코',mn:'울란바토르',me:'포드고리차',ma:'라바트',mz:'마푸투',mm:'네피도',na:'빈트후크',nr:'야렌',np:'카트만두',nl:'암스테르담',nz:'웰링턴',ni:'마나과',ne:'니아메',ng:'아부자',mk:'스코페',no:'오슬로',om:'무스카트',pk:'이슬라마바드',pw:'응게룰무드',pa:'파나마시티',pg:'포트모르즈비',py:'아순시온',pe:'리마',ph:'마닐라',pl:'바르샤바',pt:'리스본',qa:'도하',ro:'부쿠레슈티',ru:'모스크바',rw:'키갈리',kn:'바스테르',lc:'카스트리',vc:'킹스타운',ws:'아피아',sm:'산마리노',st:'상투메',sa:'리야드',sn:'다카르',rs:'베오그라드',sc:'빅토리아',sl:'프리타운',sg:'싱가포르',sk:'브라티슬라바',si:'류블랴나',sb:'호니아라',so:'모가디슈',za:'프리토리아',ss:'주바',es:'마드리드',lk:'스리자야와르데네푸라코테',sd:'하르툼',sr:'파라마리보',se:'스톡홀름',ch:'베른',sy:'다마스쿠스',tw:'타이베이',tj:'두샨베',tz:'도도마',th:'방콕',tl:'딜리',tg:'로메',to:'누쿠알로파',tt:'포트오브스페인',tn:'튀니스',tr:'앙카라',tm:'아슈하바트',tv:'푸나푸티',ug:'캄팔라',ua:'키이우',ae:'아부다비',gb:'런던',us:'워싱턴 D.C.',uy:'몬테비데오',uz:'타슈켄트',vu:'포트빌라',ve:'카라카스',vn:'하노이',ye:'사나',zm:'루사카',zw:'하라레'};
+// Landmark data: real-photo targets. Images are loaded from Wikipedia/Wikimedia thumbnails at runtime.
 const LM=[{"c":"fr","ko":"에펠탑","en":"Eiffel Tower","zh":"埃菲尔铁塔","ck":"파리","ce":"Paris","cz":"巴黎","wiki":"Eiffel Tower"},{"c":"fr","ko":"루브르 박물관","en":"Louvre Museum","zh":"卢浮宫","ck":"파리","ce":"Paris","cz":"巴黎","wiki":"Louvre Museum"},{"c":"fr","ko":"베르사유 궁전","en":"Palace of Versailles","zh":"凡尔赛宫","ck":"베르사유","ce":"Versailles","cz":"凡尔赛","wiki":"Palace of Versailles"},{"c":"fr","ko":"몽생미셸","en":"Mont Saint-Michel","zh":"圣米歇尔山","ck":"노르망디","ce":"Normandy","cz":"诺曼底","wiki":"Mont-Saint-Michel"},{"c":"fr","ko":"개선문","en":"Arc de Triomphe","zh":"凯旋门","ck":"파리","ce":"Paris","cz":"巴黎","wiki":"Arc de Triomphe"},{"c":"fr","ko":"노트르담 대성당","en":"Notre-Dame de Paris","zh":"巴黎圣母院","ck":"파리","ce":"Paris","cz":"巴黎","wiki":"Notre-Dame de Paris"},{"c":"cn","ko":"만리장성","en":"Great Wall of China","zh":"长城","ck":"베이징","ce":"Beijing","cz":"北京","wiki":"Great Wall of China"},{"c":"cn","ko":"자금성","en":"Forbidden City","zh":"紫禁城","ck":"베이징","ce":"Beijing","cz":"北京","wiki":"Forbidden City"},{"c":"cn","ko":"천단","en":"Temple of Heaven","zh":"天坛","ck":"베이징","ce":"Beijing","cz":"北京","wiki":"Temple of Heaven"},{"c":"cn","ko":"병마용","en":"Terracotta Army","zh":"兵马俑","ck":"시안","ce":"Xi’an","cz":"西安","wiki":"Terracotta Army"},{"c":"cn","ko":"포탈라궁","en":"Potala Palace","zh":"布达拉宫","ck":"라싸","ce":"Lhasa","cz":"拉萨","wiki":"Potala Palace"},{"c":"cn","ko":"동방명주탑","en":"Oriental Pearl Tower","zh":"东方明珠塔","ck":"상하이","ce":"Shanghai","cz":"上海","wiki":"Oriental Pearl Tower"},{"c":"jp","ko":"후지산","en":"Mount Fuji","zh":"富士山","ck":"시즈오카","ce":"Shizuoka","cz":"静冈","wiki":"Mount Fuji"},{"c":"jp","ko":"도쿄타워","en":"Tokyo Tower","zh":"东京塔","ck":"도쿄","ce":"Tokyo","cz":"东京","wiki":"Tokyo Tower"},{"c":"jp","ko":"금각사","en":"Kinkaku-ji","zh":"金阁寺","ck":"교토","ce":"Kyoto","cz":"京都","wiki":"Kinkaku-ji"},{"c":"jp","ko":"후시미 이나리 신사","en":"Fushimi Inari-taisha","zh":"伏见稻荷大社","ck":"교토","ce":"Kyoto","cz":"京都","wiki":"Fushimi Inari-taisha"},{"c":"jp","ko":"히메지성","en":"Himeji Castle","zh":"姬路城","ck":"히메지","ce":"Himeji","cz":"姬路","wiki":"Himeji Castle"},{"c":"jp","ko":"오사카성","en":"Osaka Castle","zh":"大阪城","ck":"오사카","ce":"Osaka","cz":"大阪","wiki":"Osaka Castle"},{"c":"us","ko":"자유의 여신상","en":"Statue of Liberty","zh":"自由女神像","ck":"뉴욕","ce":"New York","cz":"纽约","wiki":"Statue of Liberty"},{"c":"us","ko":"금문교","en":"Golden Gate Bridge","zh":"金门大桥","ck":"샌프란시스코","ce":"San Francisco","cz":"旧金山","wiki":"Golden Gate Bridge"},{"c":"us","ko":"그랜드 캐니언","en":"Grand Canyon","zh":"大峡谷","ck":"애리조나","ce":"Arizona","cz":"亚利桑那","wiki":"Grand Canyon"},{"c":"us","ko":"러시모어산","en":"Mount Rushmore","zh":"拉什莫尔山","ck":"사우스다코타","ce":"South Dakota","cz":"南达科他","wiki":"Mount Rushmore"},{"c":"us","ko":"백악관","en":"White House","zh":"白宫","ck":"워싱턴 D.C.","ce":"Washington, D.C.","cz":"华盛顿","wiki":"White House"},{"c":"us","ko":"엠파이어 스테이트 빌딩","en":"Empire State Building","zh":"帝国大厦","ck":"뉴욕","ce":"New York","cz":"纽约","wiki":"Empire State Building"},{"c":"us","ko":"옐로스톤 국립공원","en":"Yellowstone National Park","zh":"黄石国家公园","ck":"와이오밍","ce":"Wyoming","cz":"怀俄明","wiki":"Yellowstone National Park"},{"c":"us","ko":"후버댐","en":"Hoover Dam","zh":"胡佛水坝","ck":"네바다","ce":"Nevada","cz":"内华达","wiki":"Hoover Dam"},{"c":"us","ko":"스페이스 니들","en":"Space Needle","zh":"太空针塔","ck":"시애틀","ce":"Seattle","cz":"西雅图","wiki":"Space Needle"},{"c":"us","ko":"할리우드 사인","en":"Hollywood Sign","zh":"好莱坞标志","ck":"로스앤젤레스","ce":"Los Angeles","cz":"洛杉矶","wiki":"Hollywood Sign"},{"c":"gb","ko":"빅벤","en":"Big Ben","zh":"大本钟","ck":"런던","ce":"London","cz":"伦敦","wiki":"Big Ben"},{"c":"gb","ko":"타워 브리지","en":"Tower Bridge","zh":"塔桥","ck":"런던","ce":"London","cz":"伦敦","wiki":"Tower Bridge"},{"c":"gb","ko":"스톤헨지","en":"Stonehenge","zh":"巨石阵","ck":"윌트셔","ce":"Wiltshire","cz":"威尔特郡","wiki":"Stonehenge"},{"c":"gb","ko":"버킹엄 궁전","en":"Buckingham Palace","zh":"白金汉宫","ck":"런던","ce":"London","cz":"伦敦","wiki":"Buckingham Palace"},{"c":"gb","ko":"에든버러 성","en":"Edinburgh Castle","zh":"爱丁堡城堡","ck":"에든버러","ce":"Edinburgh","cz":"爱丁堡","wiki":"Edinburgh Castle"},{"c":"gb","ko":"런던탑","en":"Tower of London","zh":"伦敦塔","ck":"런던","ce":"London","cz":"伦敦","wiki":"Tower of London"},{"c":"gb","ko":"웨스트민스터 사원","en":"Westminster Abbey","zh":"威斯敏斯特教堂","ck":"런던","ce":"London","cz":"伦敦","wiki":"Westminster Abbey"},{"c":"it","ko":"콜로세움","en":"Colosseum","zh":"罗马斗兽场","ck":"로마","ce":"Rome","cz":"罗马","wiki":"Colosseum"},{"c":"it","ko":"피사의 사탑","en":"Leaning Tower of Pisa","zh":"比萨斜塔","ck":"피사","ce":"Pisa","cz":"比萨","wiki":"Leaning Tower of Pisa"},{"c":"it","ko":"트레비 분수","en":"Trevi Fountain","zh":"特莱维喷泉","ck":"로마","ce":"Rome","cz":"罗马","wiki":"Trevi Fountain"},{"c":"it","ko":"밀라노 대성당","en":"Milan Cathedral","zh":"米兰大教堂","ck":"밀라노","ce":"Milan","cz":"米兰","wiki":"Milan Cathedral"},{"c":"it","ko":"베네치아 대운하","en":"Grand Canal","zh":"大运河","ck":"베네치아","ce":"Venice","cz":"威尼斯","wiki":"Grand Canal (Venice)"},{"c":"it","ko":"피렌체 대성당","en":"Florence Cathedral","zh":"佛罗伦萨大教堂","ck":"피렌체","ce":"Florence","cz":"佛罗伦萨","wiki":"Florence Cathedral"},{"c":"it","ko":"폼페이","en":"Pompeii","zh":"庞贝古城","ck":"폼페이","ce":"Pompeii","cz":"庞贝","wiki":"Pompeii"},{"c":"in","ko":"타지마할","en":"Taj Mahal","zh":"泰姬陵","ck":"아그라","ce":"Agra","cz":"阿格拉","wiki":"Taj Mahal"},{"c":"in","ko":"레드 포트","en":"Red Fort","zh":"红堡","ck":"델리","ce":"Delhi","cz":"德里","wiki":"Red Fort"},{"c":"in","ko":"게이트웨이 오브 인디아","en":"Gateway of India","zh":"印度门孟买","ck":"뭄바이","ce":"Mumbai","cz":"孟买","wiki":"Gateway of India"},{"c":"in","ko":"하와 마할","en":"Hawa Mahal","zh":"风之宫殿","ck":"자이푸르","ce":"Jaipur","cz":"斋浦尔","wiki":"Hawa Mahal"},{"c":"in","ko":"쿠트브 미나르","en":"Qutb Minar","zh":"顾特卜塔","ck":"델리","ce":"Delhi","cz":"德里","wiki":"Qutb Minar"},{"c":"in","ko":"인도문","en":"India Gate","zh":"印度门","ck":"뉴델리","ce":"New Delhi","cz":"新德里","wiki":"India Gate"},{"c":"in","ko":"암베르 성","en":"Amber Fort","zh":"琥珀堡","ck":"자이푸르","ce":"Jaipur","cz":"斋浦尔","wiki":"Amber Fort"},{"c":"br","ko":"구세주 예수상","en":"Christ the Redeemer","zh":"救世基督像","ck":"리우데자네이루","ce":"Rio de Janeiro","cz":"里约","wiki":"Christ the Redeemer (statue)"},{"c":"br","ko":"슈거로프산","en":"Sugarloaf Mountain","zh":"糖面包山","ck":"리우데자네이루","ce":"Rio de Janeiro","cz":"里约","wiki":"Sugarloaf Mountain"},{"c":"br","ko":"이구아수 폭포","en":"Iguazu Falls","zh":"伊瓜苏瀑布","ck":"파라나","ce":"Paraná","cz":"巴拉那","wiki":"Iguazu Falls"},{"c":"br","ko":"브라질리아 대성당","en":"Cathedral of Brasília","zh":"巴西利亚大教堂","ck":"브라질리아","ce":"Brasília","cz":"巴西利亚","wiki":"Cathedral of Brasília"},{"c":"eg","ko":"기자 피라미드","en":"Giza pyramid complex","zh":"吉萨金字塔群","ck":"기자","ce":"Giza","cz":"吉萨","wiki":"Giza pyramid complex"},{"c":"eg","ko":"스핑크스","en":"Great Sphinx of Giza","zh":"狮身人面像","ck":"기자","ce":"Giza","cz":"吉萨","wiki":"Great Sphinx of Giza"},{"c":"eg","ko":"아부심벨 신전","en":"Abu Simbel","zh":"阿布辛贝神庙","ck":"아부심벨","ce":"Abu Simbel","cz":"阿布辛贝","wiki":"Abu Simbel"},{"c":"eg","ko":"카르나크 신전","en":"Karnak Temple","zh":"卡尔纳克神庙","ck":"룩소르","ce":"Luxor","cz":"卢克索","wiki":"Karnak"},{"c":"eg","ko":"룩소르 신전","en":"Luxor Temple","zh":"卢克索神庙","ck":"룩소르","ce":"Luxor","cz":"卢克索","wiki":"Luxor Temple"},{"c":"au","ko":"시드니 오페라하우스","en":"Sydney Opera House","zh":"悉尼歌剧院","ck":"시드니","ce":"Sydney","cz":"悉尼","wiki":"Sydney Opera House"},{"c":"au","ko":"울루루","en":"Uluru","zh":"乌鲁鲁","ck":"노던 준주","ce":"Northern Territory","cz":"北领地","wiki":"Uluru"},{"c":"au","ko":"그레이트 배리어 리프","en":"Great Barrier Reef","zh":"大堡礁","ck":"퀸즐랜드","ce":"Queensland","cz":"昆士兰","wiki":"Great Barrier Reef"},{"c":"au","ko":"시드니 하버 브리지","en":"Sydney Harbour Bridge","zh":"悉尼海港大桥","ck":"시드니","ce":"Sydney","cz":"悉尼","wiki":"Sydney Harbour Bridge"},{"c":"au","ko":"12사도 바위","en":"Twelve Apostles","zh":"十二门徒岩","ck":"빅토리아","ce":"Victoria","cz":"维多利亚","wiki":"The Twelve Apostles (Victoria)"},{"c":"de","ko":"브란덴부르크 문","en":"Brandenburg Gate","zh":"勃兰登堡门","ck":"베를린","ce":"Berlin","cz":"柏林","wiki":"Brandenburg Gate"},{"c":"de","ko":"노이슈반슈타인 성","en":"Neuschwanstein Castle","zh":"新天鹅堡","ck":"바이에른","ce":"Bavaria","cz":"巴伐利亚","wiki":"Neuschwanstein Castle"},{"c":"de","ko":"쾰른 대성당","en":"Cologne Cathedral","zh":"科隆大教堂","ck":"쾰른","ce":"Cologne","cz":"科隆","wiki":"Cologne Cathedral"},{"c":"de","ko":"라이히슈타크","en":"Reichstag building","zh":"德国国会大厦","ck":"베를린","ce":"Berlin","cz":"柏林","wiki":"Reichstag building"},{"c":"de","ko":"베를린 장벽","en":"Berlin Wall","zh":"柏林墙","ck":"베를린","ce":"Berlin","cz":"柏林","wiki":"Berlin Wall"},{"c":"de","ko":"하이델베르크 성","en":"Heidelberg Castle","zh":"海德堡城堡","ck":"하이델베르크","ce":"Heidelberg","cz":"海德堡","wiki":"Heidelberg Castle"},{"c":"es","ko":"사그라다 파밀리아","en":"Sagrada Família","zh":"圣家堂","ck":"바르셀로나","ce":"Barcelona","cz":"巴塞罗那","wiki":"Sagrada Família"},{"c":"es","ko":"구엘 공원","en":"Park Güell","zh":"古埃尔公园","ck":"바르셀로나","ce":"Barcelona","cz":"巴塞罗那","wiki":"Park Güell"},{"c":"es","ko":"알람브라 궁전","en":"Alhambra","zh":"阿尔罕布拉宫","ck":"그라나다","ce":"Granada","cz":"格拉纳达","wiki":"Alhambra"},{"c":"es","ko":"프라도 미술관","en":"Prado Museum","zh":"普拉多博物馆","ck":"마드리드","ce":"Madrid","cz":"马德里","wiki":"Prado Museum"},{"c":"es","ko":"구겐하임 빌바오","en":"Guggenheim Museum Bilbao","zh":"毕尔巴鄂古根海姆博物馆","ck":"빌바오","ce":"Bilbao","cz":"毕尔巴鄂","wiki":"Guggenheim Museum Bilbao"},{"c":"gr","ko":"파르테논 신전","en":"Parthenon","zh":"帕特农神庙","ck":"아테네","ce":"Athens","cz":"雅典","wiki":"Parthenon"},{"c":"gr","ko":"메테오라","en":"Meteora","zh":"迈泰奥拉","ck":"테살리아","ce":"Thessaly","cz":"色萨利","wiki":"Meteora"},{"c":"gr","ko":"산토리니","en":"Santorini","zh":"圣托里尼","ck":"키클라데스","ce":"Cyclades","cz":"基克拉泽斯","wiki":"Santorini"},{"c":"gr","ko":"올림피아 제우스 신전","en":"Temple of Olympian Zeus","zh":"奥林匹亚宙斯神庙","ck":"아테네","ce":"Athens","cz":"雅典","wiki":"Temple of Olympian Zeus, Athens"},{"c":"gr","ko":"크노소스","en":"Knossos","zh":"克诺索斯","ck":"크레타","ce":"Crete","cz":"克里特","wiki":"Knossos"},{"c":"ru","ko":"성 바실리 성당","en":"Saint Basil’s Cathedral","zh":"圣瓦西里大教堂","ck":"모스크바","ce":"Moscow","cz":"莫斯科","wiki":"Saint Basil’s Cathedral"},{"c":"ru","ko":"모스크바 크렘린","en":"Moscow Kremlin","zh":"莫斯科克里姆林宫","ck":"모스크바","ce":"Moscow","cz":"莫斯科","wiki":"Moscow Kremlin"},{"c":"ru","ko":"에르미타주 미술관","en":"Hermitage Museum","zh":"冬宫博物馆","ck":"상트페테르부르크","ce":"Saint Petersburg","cz":"圣彼得堡","wiki":"Hermitage Museum"},{"c":"ru","ko":"페테르고프 궁전","en":"Peterhof Palace","zh":"彼得霍夫宫","ck":"상트페테르부르크","ce":"Saint Petersburg","cz":"圣彼得堡","wiki":"Peterhof Palace"},{"c":"ru","ko":"피의 구원 사원","en":"Church of the Savior on Blood","zh":"滴血救世主教堂","ck":"상트페테르부르크","ce":"Saint Petersburg","cz":"圣彼得堡","wiki":"Church of the Savior on Blood"},{"c":"tr","ko":"아야 소피아","en":"Hagia Sophia","zh":"圣索菲亚大教堂","ck":"이스탄불","ce":"Istanbul","cz":"伊斯坦布尔","wiki":"Hagia Sophia"},{"c":"tr","ko":"술탄 아흐메트 모스크","en":"Blue Mosque","zh":"蓝色清真寺","ck":"이스탄불","ce":"Istanbul","cz":"伊斯坦布尔","wiki":"Sultan Ahmed Mosque"},{"c":"tr","ko":"카파도키아","en":"Cappadocia","zh":"卡帕多奇亚","ck":"카파도키아","ce":"Cappadocia","cz":"卡帕多奇亚","wiki":"Cappadocia"},{"c":"tr","ko":"톱카프 궁전","en":"Topkapı Palace","zh":"托普卡帕宫","ck":"이스탄불","ce":"Istanbul","cz":"伊斯坦布尔","wiki":"Topkapı Palace"},{"c":"tr","ko":"에페소스","en":"Ephesus","zh":"以弗所","ck":"이즈미르","ce":"Izmir","cz":"伊兹密尔","wiki":"Ephesus"},{"c":"ae","ko":"버즈 칼리파","en":"Burj Khalifa","zh":"哈利法塔","ck":"두바이","ce":"Dubai","cz":"迪拜","wiki":"Burj Khalifa"},{"c":"ae","ko":"버즈 알 아랍","en":"Burj Al Arab","zh":"帆船酒店","ck":"두바이","ce":"Dubai","cz":"迪拜","wiki":"Burj Al Arab"},{"c":"ae","ko":"셰이크 자이드 그랜드 모스크","en":"Sheikh Zayed Grand Mosque","zh":"谢赫扎耶德大清真寺","ck":"아부다비","ce":"Abu Dhabi","cz":"阿布扎比","wiki":"Sheikh Zayed Grand Mosque"},{"c":"ae","ko":"팜 주메이라","en":"Palm Jumeirah","zh":"朱美拉棕榈岛","ck":"두바이","ce":"Dubai","cz":"迪拜","wiki":"Palm Jumeirah"},{"c":"pe","ko":"마추픽추","en":"Machu Picchu","zh":"马丘比丘","ck":"쿠스코","ce":"Cusco","cz":"库斯科","wiki":"Machu Picchu"},{"c":"pe","ko":"나스카 라인","en":"Nazca Lines","zh":"纳斯卡线条","ck":"나스카","ce":"Nazca","cz":"纳斯卡","wiki":"Nazca Lines"},{"c":"pe","ko":"삭사이와만","en":"Sacsayhuamán","zh":"萨克塞瓦曼","ck":"쿠스코","ce":"Cusco","cz":"库斯科","wiki":"Sacsayhuamán"},{"c":"mx","ko":"치첸이사","en":"Chichen Itza","zh":"奇琴伊察","ck":"유카탄","ce":"Yucatán","cz":"尤卡坦","wiki":"Chichen Itza"},{"c":"mx","ko":"테오티우아칸","en":"Teotihuacan","zh":"特奥蒂瓦坎","ck":"멕시코주","ce":"State of Mexico","cz":"墨西哥州","wiki":"Teotihuacan"},{"c":"mx","ko":"팔라시오 데 벨라스 아르테스","en":"Palacio de Bellas Artes","zh":"美术宫","ck":"멕시코시티","ce":"Mexico City","cz":"墨西哥城","wiki":"Palacio de Bellas Artes"},{"c":"mx","ko":"욱스말","en":"Uxmal","zh":"乌斯马尔","ck":"유카탄","ce":"Yucatán","cz":"尤卡坦","wiki":"Uxmal"},{"c":"kh","ko":"앙코르 와트","en":"Angkor Wat","zh":"吴哥窟","ck":"시엠레아프","ce":"Siem Reap","cz":"暹粒","wiki":"Angkor Wat"},{"c":"kh","ko":"바이욘 사원","en":"Bayon","zh":"巴戎寺","ck":"시엠레아프","ce":"Siem Reap","cz":"暹粒","wiki":"Bayon"},{"c":"kh","ko":"타프롬","en":"Ta Prohm","zh":"塔普伦寺","ck":"시엠레아프","ce":"Siem Reap","cz":"暹粒","wiki":"Ta Prohm"},{"c":"jo","ko":"페트라","en":"Petra","zh":"佩特拉","ck":"와디무사","ce":"Wadi Musa","cz":"瓦迪穆萨","wiki":"Petra"},{"c":"jo","ko":"와디럼","en":"Wadi Rum","zh":"瓦迪拉姆","ck":"와디럼","ce":"Wadi Rum","cz":"瓦迪拉姆","wiki":"Wadi Rum"},{"c":"jo","ko":"제라시","en":"Jerash","zh":"杰拉什","ck":"제라시","ce":"Jerash","cz":"杰拉什","wiki":"Jerash"},{"c":"kr","ko":"경복궁","en":"Gyeongbokgung Palace","zh":"景福宫","ck":"서울","ce":"Seoul","cz":"首尔","wiki":"Gyeongbokgung"},{"c":"kr","ko":"남산서울타워","en":"N Seoul Tower","zh":"首尔塔","ck":"서울","ce":"Seoul","cz":"首尔","wiki":"N Seoul Tower"},{"c":"kr","ko":"롯데월드타워","en":"Lotte World Tower","zh":"乐天世界塔","ck":"서울","ce":"Seoul","cz":"首尔","wiki":"Lotte World Tower"},{"c":"kr","ko":"불국사","en":"Bulguksa","zh":"佛国寺","ck":"경주","ce":"Gyeongju","cz":"庆州","wiki":"Bulguksa"},{"c":"kr","ko":"창덕궁","en":"Changdeokgung","zh":"昌德宫","ck":"서울","ce":"Seoul","cz":"首尔","wiki":"Changdeokgung"},{"c":"kr","ko":"한라산","en":"Hallasan","zh":"汉拿山","ck":"제주","ce":"Jeju","cz":"济州","wiki":"Hallasan"},{"c":"sg","ko":"마리나 베이 샌즈","en":"Marina Bay Sands","zh":"滨海湾金沙","ck":"싱가포르","ce":"Singapore","cz":"新加坡","wiki":"Marina Bay Sands"},{"c":"sg","ko":"가든스 바이 더 베이","en":"Gardens by the Bay","zh":"滨海湾花园","ck":"싱가포르","ce":"Singapore","cz":"新加坡","wiki":"Gardens by the Bay"},{"c":"sg","ko":"머라이언","en":"Merlion","zh":"鱼尾狮","ck":"싱가포르","ce":"Singapore","cz":"新加坡","wiki":"Merlion"},{"c":"sg","ko":"주얼 창이공항","en":"Jewel Changi Airport","zh":"星耀樟宜","ck":"싱가포르","ce":"Singapore","cz":"新加坡","wiki":"Jewel Changi Airport"},{"c":"nl","ko":"잔세스칸스","en":"Zaanse Schans","zh":"桑斯安斯风车村","ck":"잔담","ce":"Zaandam","cz":"赞丹","wiki":"Zaanse Schans"},{"c":"nl","ko":"레이크스 미술관","en":"Rijksmuseum","zh":"荷兰国家博物馆","ck":"암스테르담","ce":"Amsterdam","cz":"阿姆斯特丹","wiki":"Rijksmuseum"},{"c":"nl","ko":"쾨켄호프","en":"Keukenhof","zh":"库肯霍夫","ck":"리서","ce":"Lisse","cz":"利瑟","wiki":"Keukenhof"},{"c":"nl","ko":"안네 프랑크의 집","en":"Anne Frank House","zh":"安妮之家","ck":"암스테르담","ce":"Amsterdam","cz":"阿姆斯特丹","wiki":"Anne Frank House"},{"c":"nl","ko":"킨더데이크","en":"Kinderdijk","zh":"小孩堤防","ck":"킨더데이크","ce":"Kinderdijk","cz":"小孩堤防","wiki":"Kinderdijk"},{"c":"cz","ko":"프라하 천문시계","en":"Prague astronomical clock","zh":"布拉格天文钟","ck":"프라하","ce":"Prague","cz":"布拉格","wiki":"Prague astronomical clock"},{"c":"cz","ko":"카를교","en":"Charles Bridge","zh":"查理大桥","ck":"프라하","ce":"Prague","cz":"布拉格","wiki":"Charles Bridge"},{"c":"cz","ko":"프라하성","en":"Prague Castle","zh":"布拉格城堡","ck":"프라하","ce":"Prague","cz":"布拉格","wiki":"Prague Castle"},{"c":"cz","ko":"성 비투스 대성당","en":"St. Vitus Cathedral","zh":"圣维特主教座堂","ck":"프라하","ce":"Prague","cz":"布拉格","wiki":"St. Vitus Cathedral"},{"c":"id","ko":"보로부두르","en":"Borobudur","zh":"婆罗浮屠","ck":"욕야카르타","ce":"Yogyakarta","cz":"日惹","wiki":"Borobudur"},{"c":"id","ko":"프람바난","en":"Prambanan","zh":"普兰巴南","ck":"욕야카르타","ce":"Yogyakarta","cz":"日惹","wiki":"Prambanan"},{"c":"id","ko":"타나롯","en":"Tanah Lot","zh":"海神庙","ck":"발리","ce":"Bali","cz":"巴厘岛","wiki":"Tanah Lot"},{"c":"id","ko":"브로모산","en":"Mount Bromo","zh":"布罗莫火山","ck":"자바","ce":"Java","cz":"爪哇","wiki":"Mount Bromo"},{"c":"id","ko":"코모도 국립공원","en":"Komodo National Park","zh":"科莫多国家公园","ck":"코모도","ce":"Komodo","cz":"科莫多","wiki":"Komodo National Park"},{"c":"th","ko":"왕궁","en":"Grand Palace","zh":"大皇宫","ck":"방콕","ce":"Bangkok","cz":"曼谷","wiki":"Grand Palace"},{"c":"th","ko":"왓 아룬","en":"Wat Arun","zh":"郑王庙","ck":"방콕","ce":"Bangkok","cz":"曼谷","wiki":"Wat Arun"},{"c":"th","ko":"왓 프라깨우","en":"Wat Phra Kaew","zh":"玉佛寺","ck":"방콕","ce":"Bangkok","cz":"曼谷","wiki":"Wat Phra Kaew"},{"c":"th","ko":"아유타야","en":"Ayutthaya Historical Park","zh":"大城历史公园","ck":"아유타야","ce":"Ayutthaya","cz":"大城","wiki":"Ayutthaya Historical Park"},{"c":"th","ko":"왓 포","en":"Wat Pho","zh":"卧佛寺","ck":"방콕","ce":"Bangkok","cz":"曼谷","wiki":"Wat Pho"},{"c":"vn","ko":"하롱베이","en":"Ha Long Bay","zh":"下龙湾","ck":"꽝닌","ce":"Quảng Ninh","cz":"广宁","wiki":"Hạ Long Bay"},{"c":"vn","ko":"호이안 고도시","en":"Hoi An Ancient Town","zh":"会安古城","ck":"호이안","ce":"Hội An","cz":"会安","wiki":"Hội An"},{"c":"vn","ko":"후에 황성","en":"Imperial City of Huế","zh":"顺化皇城","ck":"후에","ce":"Huế","cz":"顺化","wiki":"Imperial City of Huế"},{"c":"vn","ko":"골든 브리지","en":"Golden Bridge","zh":"金桥","ck":"다낭","ce":"Da Nang","cz":"岘港","wiki":"Golden Bridge (Vietnam)"},{"c":"ca","ko":"CN 타워","en":"CN Tower","zh":"加拿大国家电视塔","ck":"토론토","ce":"Toronto","cz":"多伦多","wiki":"CN Tower"},{"c":"ca","ko":"나이아가라 폭포","en":"Niagara Falls","zh":"尼亚加拉瀑布","ck":"온타리오","ce":"Ontario","cz":"安大略","wiki":"Niagara Falls"},{"c":"ca","ko":"밴프 국립공원","en":"Banff National Park","zh":"班夫国家公园","ck":"앨버타","ce":"Alberta","cz":"艾伯塔","wiki":"Banff National Park"},{"c":"ca","ko":"몬트리올 노트르담 대성당","en":"Notre-Dame Basilica","zh":"蒙特利尔圣母圣殿","ck":"몬트리올","ce":"Montreal","cz":"蒙特利尔","wiki":"Notre-Dame Basilica (Montreal)"},{"c":"ca","ko":"샤토 프롱트낙","en":"Château Frontenac","zh":"芳堤娜城堡","ck":"퀘벡","ce":"Quebec City","cz":"魁北克","wiki":"Château Frontenac"},{"c":"ar","ko":"부에노스아이레스 오벨리스크","en":"Obelisco de Buenos Aires","zh":"布宜诺斯艾利斯方尖碑","ck":"부에노스아이레스","ce":"Buenos Aires","cz":"布宜诺斯艾利斯","wiki":"Obelisco de Buenos Aires"},{"c":"ar","ko":"페리토 모레노 빙하","en":"Perito Moreno Glacier","zh":"佩里托莫雷诺冰川","ck":"파타고니아","ce":"Patagonia","cz":"巴塔哥尼亚","wiki":"Perito Moreno Glacier"},{"c":"cl","ko":"이스터섬 모아이","en":"Easter Island Moai","zh":"复活节岛摩艾","ck":"이스터섬","ce":"Easter Island","cz":"复活节岛","wiki":"Moai"},{"c":"cl","ko":"토레스 델 파이네","en":"Torres del Paine","zh":"百内国家公园","ck":"파타고니아","ce":"Patagonia","cz":"巴塔哥尼亚","wiki":"Torres del Paine National Park"},{"c":"cl","ko":"아타카마 사막","en":"Atacama Desert","zh":"阿塔卡马沙漠","ck":"아타카마","ce":"Atacama","cz":"阿塔卡马","wiki":"Atacama Desert"},{"c":"za","ko":"테이블 마운틴","en":"Table Mountain","zh":"桌山","ck":"케이프타운","ce":"Cape Town","cz":"开普敦","wiki":"Table Mountain"},{"c":"za","ko":"로벤섬","en":"Robben Island","zh":"罗本岛","ck":"케이프타운","ce":"Cape Town","cz":"开普敦","wiki":"Robben Island"},{"c":"za","ko":"유니언 빌딩","en":"Union Buildings","zh":"联合大厦","ck":"프리토리아","ce":"Pretoria","cz":"比勒陀利亚","wiki":"Union Buildings"},{"c":"ma","ko":"하산 2세 모스크","en":"Hassan II Mosque","zh":"哈桑二世清真寺","ck":"카사블랑카","ce":"Casablanca","cz":"卡萨布兰卡","wiki":"Hassan II Mosque"},{"c":"ma","ko":"제마 엘프나","en":"Jemaa el-Fnaa","zh":"杰马夫纳广场","ck":"마라케시","ce":"Marrakesh","cz":"马拉喀什","wiki":"Jemaa el-Fnaa"},{"c":"ma","ko":"아이트 벤하두","en":"Aït Benhaddou","zh":"阿伊特本哈杜","ck":"와르자자트","ce":"Ouarzazate","cz":"瓦尔扎扎特","wiki":"Aït Benhaddou"},{"c":"sa","ko":"예언자의 모스크","en":"Al-Masjid an-Nabawi","zh":"先知寺","ck":"메디나","ce":"Medina","cz":"麦地那","wiki":"Al-Masjid an-Nabawi"},{"c":"sa","ko":"마스지드 알하람","en":"Masjid al-Haram","zh":"禁寺","ck":"메카","ce":"Mecca","cz":"麦加","wiki":"Masjid al-Haram"},{"c":"sa","ko":"알울라","en":"Al-Ula","zh":"欧拉古城","ck":"알울라","ce":"Al-Ula","cz":"欧拉","wiki":"Al-Ula"},{"c":"il","ko":"통곡의 벽","en":"Western Wall","zh":"西墙","ck":"예루살렘","ce":"Jerusalem","cz":"耶路撒冷","wiki":"Western Wall"},{"c":"il","ko":"바위의 돔","en":"Dome of the Rock","zh":"圆顶清真寺","ck":"예루살렘","ce":"Jerusalem","cz":"耶路撒冷","wiki":"Dome of the Rock"},{"c":"il","ko":"마사다","en":"Masada","zh":"马萨达","ck":"사해","ce":"Dead Sea","cz":"死海","wiki":"Masada"},{"c":"my","ko":"페트로나스 트윈타워","en":"Petronas Towers","zh":"双子塔","ck":"쿠알라룸푸르","ce":"Kuala Lumpur","cz":"吉隆坡","wiki":"Petronas Towers"},{"c":"my","ko":"바투 동굴","en":"Batu Caves","zh":"黑风洞","ck":"셀랑고르","ce":"Selangor","cz":"雪兰莪","wiki":"Batu Caves"},{"c":"my","ko":"쿠알라룸푸르 타워","en":"Kuala Lumpur Tower","zh":"吉隆坡塔","ck":"쿠알라룸푸르","ce":"Kuala Lumpur","cz":"吉隆坡","wiki":"Kuala Lumpur Tower"},{"c":"my","ko":"랑카위 스카이 브리지","en":"Langkawi Sky Bridge","zh":"兰卡威天空之桥","ck":"랑카위","ce":"Langkawi","cz":"兰卡威","wiki":"Langkawi Sky Bridge"},{"c":"ph","ko":"초콜릿 힐스","en":"Chocolate Hills","zh":"巧克力山","ck":"보홀","ce":"Bohol","cz":"薄荷岛","wiki":"Chocolate Hills"},{"c":"ph","ko":"바나우에 계단식 논","en":"Banaue Rice Terraces","zh":"巴拿威梯田","ck":"이푸가오","ce":"Ifugao","cz":"伊富高","wiki":"Banaue Rice Terraces"},{"c":"ph","ko":"마욘 화산","en":"Mayon Volcano","zh":"马荣火山","ck":"알바이","ce":"Albay","cz":"阿尔拜","wiki":"Mayon"},{"c":"nz","ko":"스카이 타워","en":"Sky Tower","zh":"天空塔","ck":"오클랜드","ce":"Auckland","cz":"奥克兰","wiki":"Sky Tower (Auckland)"},{"c":"nz","ko":"밀포드 사운드","en":"Milford Sound","zh":"米尔福德峡湾","ck":"피오르드랜드","ce":"Fiordland","cz":"峡湾地","wiki":"Milford Sound"},{"c":"nz","ko":"호비튼","en":"Hobbiton Movie Set","zh":"霍比屯","ck":"마타마타","ce":"Matamata","cz":"马塔马塔","wiki":"Hobbiton Movie Set"},{"c":"nz","ko":"마운트 쿡","en":"Aoraki / Mount Cook","zh":"库克山","ck":"남섬","ce":"South Island","cz":"南岛","wiki":"Aoraki / Mount Cook"},{"c":"ie","ko":"모허 절벽","en":"Cliffs of Moher","zh":"莫赫悬崖","ck":"클레어","ce":"County Clare","cz":"克莱尔","wiki":"Cliffs of Moher"},{"c":"ie","ko":"더블린 성","en":"Dublin Castle","zh":"都柏林城堡","ck":"더블린","ce":"Dublin","cz":"都柏林","wiki":"Dublin Castle"},{"c":"pt","ko":"벨렝탑","en":"Belém Tower","zh":"贝伦塔","ck":"리스본","ce":"Lisbon","cz":"里斯本","wiki":"Belém Tower"},{"c":"pt","ko":"제로니무스 수도원","en":"Jerónimos Monastery","zh":"热罗尼莫斯修道院","ck":"리스본","ce":"Lisbon","cz":"里斯本","wiki":"Jerónimos Monastery"},{"c":"pt","ko":"페나궁","en":"Pena Palace","zh":"佩纳宫","ck":"신트라","ce":"Sintra","cz":"辛特拉","wiki":"Pena Palace"},{"c":"pt","ko":"동 루이스 1세 다리","en":"Dom Luís I Bridge","zh":"路易一世大桥","ck":"포르투","ce":"Porto","cz":"波尔图","wiki":"Dom Luís I Bridge"},{"c":"pl","ko":"바벨성","en":"Wawel Castle","zh":"瓦维尔城堡","ck":"크라쿠프","ce":"Kraków","cz":"克拉科夫","wiki":"Wawel Castle"},{"c":"pl","ko":"말보르크 성","en":"Malbork Castle","zh":"马尔堡城堡","ck":"말보르크","ce":"Malbork","cz":"马尔堡","wiki":"Malbork Castle"},{"c":"pl","ko":"아우슈비츠","en":"Auschwitz-Birkenau","zh":"奥斯威辛集中营","ck":"오시비엥침","ce":"Oświęcim","cz":"奥斯维辛","wiki":"Auschwitz concentration camp"},{"c":"pl","ko":"문화과학궁전","en":"Palace of Culture and Science","zh":"文化科学宫","ck":"바르샤바","ce":"Warsaw","cz":"华沙","wiki":"Palace of Culture and Science"},{"c":"at","ko":"쇤브룬 궁전","en":"Schönbrunn Palace","zh":"美泉宫","ck":"빈","ce":"Vienna","cz":"维也纳","wiki":"Schönbrunn Palace"},{"c":"at","ko":"슈테판 대성당","en":"St. Stephen’s Cathedral","zh":"圣斯蒂芬大教堂","ck":"빈","ce":"Vienna","cz":"维也纳","wiki":"St. Stephen’s Cathedral, Vienna"},{"c":"at","ko":"벨베데레 궁전","en":"Belvedere","zh":"丽城宫","ck":"빈","ce":"Vienna","cz":"维也纳","wiki":"Belvedere, Vienna"},{"c":"at","ko":"할슈타트","en":"Hallstatt","zh":"哈尔施塔特","ck":"할슈타트","ce":"Hallstatt","cz":"哈尔施塔特","wiki":"Hallstatt"},{"c":"ch","ko":"마터호른","en":"Matterhorn","zh":"马特洪峰","ck":"체르마트","ce":"Zermatt","cz":"采尔马特","wiki":"Matterhorn"},{"c":"ch","ko":"카펠교","en":"Chapel Bridge","zh":"卡佩尔桥","ck":"루체른","ce":"Lucerne","cz":"卢塞恩","wiki":"Chapel Bridge"},{"c":"ch","ko":"융프라우요흐","en":"Jungfraujoch","zh":"少女峰山坳","ck":"인터라켄","ce":"Interlaken","cz":"因特拉肯","wiki":"Jungfraujoch"},{"c":"ch","ko":"시옹성","en":"Chillon Castle","zh":"西庸城堡","ck":"몽트뢰","ce":"Montreux","cz":"蒙特勒","wiki":"Chillon Castle"},{"c":"se","ko":"바사 박물관","en":"Vasa Museum","zh":"瓦萨博物馆","ck":"스톡홀름","ce":"Stockholm","cz":"斯德哥尔摩","wiki":"Vasa Museum"},{"c":"se","ko":"스톡홀름 시청","en":"Stockholm City Hall","zh":"斯德哥尔摩市政厅","ck":"스톡홀름","ce":"Stockholm","cz":"斯德哥尔摩","wiki":"Stockholm City Hall"},{"c":"se","ko":"드로트닝홀름 궁전","en":"Drottningholm Palace","zh":"卓宁霍姆宫","ck":"스톡홀름","ce":"Stockholm","cz":"斯德哥尔摩","wiki":"Drottningholm Palace"},{"c":"no","ko":"게이랑에르피오르","en":"Geirangerfjord","zh":"盖朗厄尔峡湾","ck":"뫼레오그롬스달","ce":"Møre og Romsdal","cz":"默勒-鲁姆斯达尔","wiki":"Geirangerfjord"},{"c":"no","ko":"브뤼겐","en":"Bryggen","zh":"布吕根","ck":"베르겐","ce":"Bergen","cz":"卑尔根","wiki":"Bryggen"},{"c":"no","ko":"비겔란 조각공원","en":"Vigeland Sculpture Park","zh":"维格兰雕塑公园","ck":"오슬로","ce":"Oslo","cz":"奥斯陆","wiki":"Vigeland Sculpture Park"},{"c":"fi","ko":"헬싱키 대성당","en":"Helsinki Cathedral","zh":"赫尔辛基大教堂","ck":"헬싱키","ce":"Helsinki","cz":"赫尔辛基","wiki":"Helsinki Cathedral"},{"c":"fi","ko":"수오멘린나","en":"Suomenlinna","zh":"芬兰堡","ck":"헬싱키","ce":"Helsinki","cz":"赫尔辛基","wiki":"Suomenlinna"},{"c":"dk","ko":"인어공주상","en":"The Little Mermaid","zh":"小美人鱼像","ck":"코펜하겐","ce":"Copenhagen","cz":"哥本哈根","wiki":"The Little Mermaid (statue)"},{"c":"dk","ko":"티볼리 공원","en":"Tivoli Gardens","zh":"蒂沃利公园","ck":"코펜하겐","ce":"Copenhagen","cz":"哥本哈根","wiki":"Tivoli Gardens"},{"c":"dk","ko":"니하운","en":"Nyhavn","zh":"新港","ck":"코펜하겐","ce":"Copenhagen","cz":"哥本哈根","wiki":"Nyhavn"},{"c":"dk","ko":"크론보르 성","en":"Kronborg","zh":"克伦堡","ck":"헬싱외르","ce":"Helsingør","cz":"赫尔辛格","wiki":"Kronborg"},{"c":"be","ko":"아토미움","en":"Atomium","zh":"原子球塔","ck":"브뤼셀","ce":"Brussels","cz":"布鲁塞尔","wiki":"Atomium"},{"c":"be","ko":"그랑플라스","en":"Grand-Place","zh":"大广场","ck":"브뤼셀","ce":"Brussels","cz":"布鲁塞尔","wiki":"Grand-Place"},{"c":"be","ko":"오줌싸개 소년","en":"Manneken Pis","zh":"撒尿小童","ck":"브뤼셀","ce":"Brussels","cz":"布鲁塞尔","wiki":"Manneken Pis"},{"c":"tw","ko":"타이베이 101","en":"Taipei 101","zh":"台北101","ck":"타이베이","ce":"Taipei","cz":"台北","wiki":"Taipei 101"},{"c":"tw","ko":"국립고궁박물원","en":"National Palace Museum","zh":"国立故宫博物院","ck":"타이베이","ce":"Taipei","cz":"台北","wiki":"National Palace Museum"},{"c":"tw","ko":"르웨탄","en":"Sun Moon Lake","zh":"日月潭","ck":"난터우","ce":"Nantou","cz":"南投","wiki":"Sun Moon Lake"},{"c":"lk","ko":"시기리야","en":"Sigiriya","zh":"狮子岩","ck":"마탈레","ce":"Matale","cz":"马特莱","wiki":"Sigiriya"},{"c":"lk","ko":"불치사","en":"Temple of the Tooth","zh":"佛牙寺","ck":"캔디","ce":"Kandy","cz":"康提","wiki":"Temple of the Tooth"},{"c":"lk","ko":"갈레 요새","en":"Galle Fort","zh":"加勒堡","ck":"갈레","ce":"Galle","cz":"加勒","wiki":"Galle Fort"},{"c":"np","ko":"에베레스트 산","en":"Mount Everest","zh":"珠穆朗玛峰","ck":"히말라야","ce":"Himalayas","cz":"喜马拉雅","wiki":"Mount Everest"},{"c":"np","ko":"파슈파티나트 사원","en":"Pashupatinath Temple","zh":"帕斯帕提那寺","ck":"카트만두","ce":"Kathmandu","cz":"加德满都","wiki":"Pashupatinath Temple"},{"c":"np","ko":"보드나트","en":"Boudhanath","zh":"博达哈大佛塔","ck":"카트만두","ce":"Kathmandu","cz":"加德满都","wiki":"Boudhanath"},{"c":"mm","ko":"쉐다곤 파고다","en":"Shwedagon Pagoda","zh":"瑞德宫大金塔","ck":"양곤","ce":"Yangon","cz":"仰光","wiki":"Shwedagon Pagoda"},{"c":"mm","ko":"바간","en":"Bagan","zh":"蒲甘","ck":"만달레이","ce":"Mandalay","cz":"曼德勒","wiki":"Bagan"},{"c":"la","ko":"파탓루앙","en":"Pha That Luang","zh":"塔銮","ck":"비엔티안","ce":"Vientiane","cz":"万象","wiki":"Pha That Luang"},{"c":"la","ko":"꽝시 폭포","en":"Kuang Si Falls","zh":"光西瀑布","ck":"루앙프라방","ce":"Luang Prabang","cz":"琅勃拉邦","wiki":"Kuang Si Falls"},{"c":"bd","ko":"아산 만질","en":"Ahsan Manzil","zh":"阿赫桑曼济勒","ck":"다카","ce":"Dhaka","cz":"达卡","wiki":"Ahsan Manzil"},{"c":"bd","ko":"소마푸라 마하비하라","en":"Somapura Mahavihara","zh":"苏摩补罗大寺","ck":"파하르푸르","ce":"Paharpur","cz":"帕哈尔普尔","wiki":"Somapura Mahavihara"},{"c":"pk","ko":"바드샤히 모스크","en":"Badshahi Mosque","zh":"巴德夏希清真寺","ck":"라호르","ce":"Lahore","cz":"拉合尔","wiki":"Badshahi Mosque"},{"c":"pk","ko":"라호르 성","en":"Lahore Fort","zh":"拉合尔堡","ck":"라호르","ce":"Lahore","cz":"拉合尔","wiki":"Lahore Fort"},{"c":"pk","ko":"미나르 에 파키스탄","en":"Minar-e-Pakistan","zh":"巴基斯坦塔","ck":"라호르","ce":"Lahore","cz":"拉合尔","wiki":"Minar-e-Pakistan"},{"c":"ir","ko":"페르세폴리스","en":"Persepolis","zh":"波斯波利斯","ck":"시라즈","ce":"Shiraz","cz":"设拉子","wiki":"Persepolis"},{"c":"ir","ko":"아자디 타워","en":"Azadi Tower","zh":"自由塔","ck":"테헤란","ce":"Tehran","cz":"德黑兰","wiki":"Azadi Tower"},{"c":"ir","ko":"이맘 광장","en":"Naqsh-e Jahan Square","zh":"伊玛目广场","ck":"이스파한","ce":"Isfahan","cz":"伊斯法罕","wiki":"Naqsh-e Jahan Square"},{"c":"uz","ko":"레기스탄","en":"Registan","zh":"雷吉斯坦","ck":"사마르칸트","ce":"Samarkand","cz":"撒马尔罕","wiki":"Registan"},{"c":"uz","ko":"샤히진다","en":"Shah-i-Zinda","zh":"沙赫静达","ck":"사마르칸트","ce":"Samarkand","cz":"撒马尔罕","wiki":"Shah-i-Zinda"},{"c":"kz","ko":"바이테렉","en":"Bayterek","zh":"巴伊杰列克塔","ck":"아스타나","ce":"Astana","cz":"阿斯塔纳","wiki":"Bayterek"},{"c":"kz","ko":"메데우","en":"Medeu","zh":"麦迪奥","ck":"알마티","ce":"Almaty","cz":"阿拉木图","wiki":"Medeu"},{"c":"mn","ko":"칭기즈칸 기마상","en":"Genghis Khan Equestrian Statue","zh":"成吉思汗骑马像","ck":"울란바토르","ce":"Ulaanbaatar","cz":"乌兰巴托","wiki":"Genghis Khan Equestrian Statue"},{"c":"mn","ko":"에르덴 조 사원","en":"Erdene Zuu Monastery","zh":"额尔德尼召寺","ck":"하라호린","ce":"Kharkhorin","cz":"哈尔和林","wiki":"Erdene Zuu Monastery"},{"c":"ge","ko":"나리칼라 요새","en":"Narikala","zh":"纳里卡拉堡垒","ck":"트빌리시","ce":"Tbilisi","cz":"第比利斯","wiki":"Narikala"},{"c":"ge","ko":"스베티츠호벨리 대성당","en":"Svetitskhoveli Cathedral","zh":"生命之柱主教座堂","ck":"므츠헤타","ce":"Mtskheta","cz":"姆茨赫塔","wiki":"Svetitskhoveli Cathedral"},{"c":"am","ko":"게하르트 수도원","en":"Geghard","zh":"格加尔德修道院","ck":"코타이크","ce":"Kotayk","cz":"科泰克","wiki":"Geghard"},{"c":"am","ko":"호르 비랍","en":"Khor Virap","zh":"霍尔维拉普","ck":"아라라트","ce":"Ararat","cz":"亚拉腊","wiki":"Khor Virap"},{"c":"az","ko":"처녀탑","en":"Maiden Tower","zh":"少女塔","ck":"바쿠","ce":"Baku","cz":"巴库","wiki":"Maiden Tower (Baku)"},{"c":"az","ko":"플레임 타워","en":"Flame Towers","zh":"火焰塔","ck":"바쿠","ce":"Baku","cz":"巴库","wiki":"Flame Towers"},{"c":"ro","ko":"브란성","en":"Bran Castle","zh":"布朗城堡","ck":"브란","ce":"Bran","cz":"布朗","wiki":"Bran Castle"},{"c":"ro","ko":"의회궁","en":"Palace of the Parliament","zh":"议会宫","ck":"부쿠레슈티","ce":"Bucharest","cz":"布加勒斯特","wiki":"Palace of the Parliament"},{"c":"hu","ko":"헝가리 국회의사당","en":"Hungarian Parliament Building","zh":"匈牙利国会大厦","ck":"부다페스트","ce":"Budapest","cz":"布达佩斯","wiki":"Hungarian Parliament Building"},{"c":"hu","ko":"부다성","en":"Buda Castle","zh":"布达城堡","ck":"부다페스트","ce":"Budapest","cz":"布达佩斯","wiki":"Buda Castle"},{"c":"hu","ko":"어부의 요새","en":"Fisherman’s Bastion","zh":"渔人堡","ck":"부다페스트","ce":"Budapest","cz":"布达佩斯","wiki":"Fisherman’s Bastion"},{"c":"ua","ko":"성 소피아 대성당","en":"Saint Sophia Cathedral","zh":"圣索菲亚主教座堂","ck":"키이우","ce":"Kyiv","cz":"基辅","wiki":"Saint Sophia Cathedral, Kyiv"},{"c":"ua","ko":"조국 기념비","en":"Motherland Monument","zh":"祖国母亲雕像","ck":"키이우","ce":"Kyiv","cz":"基辅","wiki":"Motherland Monument"},{"c":"hr","ko":"두브로브니크 성벽","en":"Walls of Dubrovnik","zh":"杜布罗夫尼克城墙","ck":"두브로브니크","ce":"Dubrovnik","cz":"杜布罗夫尼克","wiki":"Walls of Dubrovnik"},{"c":"hr","ko":"디오클레티아누스 궁전","en":"Diocletian’s Palace","zh":"戴克里先宫","ck":"스플리트","ce":"Split","cz":"斯普利特","wiki":"Diocletian’s Palace"},{"c":"si","ko":"블레드 호수","en":"Lake Bled","zh":"布莱德湖","ck":"블레드","ce":"Bled","cz":"布莱德","wiki":"Lake Bled"},{"c":"si","ko":"프레자마 성","en":"Predjama Castle","zh":"洞窟城堡","ck":"프레자마","ce":"Predjama","cz":"普雷贾马","wiki":"Predjama Castle"},{"c":"sk","ko":"브라티슬라바 성","en":"Bratislava Castle","zh":"布拉迪斯拉发城堡","ck":"브라티슬라바","ce":"Bratislava","cz":"布拉迪斯拉发","wiki":"Bratislava Castle"},{"c":"sk","ko":"스피슈 성","en":"Spiš Castle","zh":"斯皮什城堡","ck":"스피슈","ce":"Spiš","cz":"斯皮什","wiki":"Spiš Castle"},{"c":"lt","ko":"트라카이 성","en":"Trakai Island Castle","zh":"特拉凯岛城堡","ck":"트라카이","ce":"Trakai","cz":"特拉凯","wiki":"Trakai Island Castle"},{"c":"lt","ko":"십자가 언덕","en":"Hill of Crosses","zh":"十字架山","ck":"샤울레이","ce":"Šiauliai","cz":"希奥利艾","wiki":"Hill of Crosses"},{"c":"lv","ko":"리가 대성당","en":"Riga Cathedral","zh":"里加主教座堂","ck":"리가","ce":"Riga","cz":"里加","wiki":"Riga Cathedral"},{"c":"lv","ko":"검은머리전당","en":"House of the Blackheads","zh":"黑头宫","ck":"리가","ce":"Riga","cz":"里加","wiki":"House of the Blackheads"},{"c":"ee","ko":"알렉산더 네브스키 대성당","en":"Alexander Nevsky Cathedral","zh":"亚历山大涅夫斯基大教堂","ck":"탈린","ce":"Tallinn","cz":"塔林","wiki":"Alexander Nevsky Cathedral, Tallinn"},{"c":"ee","ko":"탈린 시청","en":"Tallinn Town Hall","zh":"塔林市政厅","ck":"탈린","ce":"Tallinn","cz":"塔林","wiki":"Tallinn Town Hall"},{"c":"is","ko":"할그림스키르캬","en":"Hallgrímskirkja","zh":"哈尔格林姆教堂","ck":"레이캬비크","ce":"Reykjavík","cz":"雷克雅未克","wiki":"Hallgrímskirkja"},{"c":"is","ko":"블루 라군","en":"Blue Lagoon","zh":"蓝湖","ck":"그린다비크","ce":"Grindavík","cz":"格林达维克","wiki":"Blue Lagoon (geothermal spa)"},{"c":"is","ko":"굴포스","en":"Gullfoss","zh":"黄金瀑布","ck":"아이슬란드","ce":"Iceland","cz":"冰岛","wiki":"Gullfoss"},{"c":"ke","ko":"마사이마라","en":"Maasai Mara","zh":"马赛马拉","ck":"나록","ce":"Narok","cz":"纳罗克","wiki":"Maasai Mara"},{"c":"ke","ko":"케냐산","en":"Mount Kenya","zh":"肯尼亚山","ck":"케냐산","ce":"Mount Kenya","cz":"肯尼亚山","wiki":"Mount Kenya"},{"c":"tz","ko":"킬리만자로산","en":"Mount Kilimanjaro","zh":"乞力马扎罗山","ck":"킬리만자로","ce":"Kilimanjaro","cz":"乞力马扎罗","wiki":"Mount Kilimanjaro"},{"c":"tz","ko":"세렝게티","en":"Serengeti","zh":"塞伦盖蒂","ck":"세렝게티","ce":"Serengeti","cz":"塞伦盖蒂","wiki":"Serengeti"},{"c":"et","ko":"랄리벨라 암굴교회","en":"Lalibela","zh":"拉利贝拉","ck":"랄리벨라","ce":"Lalibela","cz":"拉利贝拉","wiki":"Lalibela"},{"c":"et","ko":"악숨 오벨리스크","en":"Obelisk of Axum","zh":"阿克苏姆方尖碑","ck":"악숨","ce":"Axum","cz":"阿克苏姆","wiki":"Obelisk of Axum"},{"c":"gh","ko":"케이프코스트 성","en":"Cape Coast Castle","zh":"海岸角城堡","ck":"케이프코스트","ce":"Cape Coast","cz":"海岸角","wiki":"Cape Coast Castle"},{"c":"gh","ko":"독립문","en":"Independence Arch","zh":"独立拱门","ck":"아크라","ce":"Accra","cz":"阿克拉","wiki":"Independence Arch"},{"c":"ng","ko":"주마 바위","en":"Zuma Rock","zh":"祖马岩","ck":"아부자","ce":"Abuja","cz":"阿布贾","wiki":"Zuma Rock"},{"c":"ng","ko":"아부자 국립 모스크","en":"Abuja National Mosque","zh":"阿布贾国家清真寺","ck":"아부자","ce":"Abuja","cz":"阿布贾","wiki":"Abuja National Mosque"},{"c":"rw","ko":"키갈리 집단학살 기념관","en":"Kigali Genocide Memorial","zh":"基加利大屠杀纪念馆","ck":"키갈리","ce":"Kigali","cz":"基加利","wiki":"Kigali Genocide Memorial"},{"c":"zm","ko":"빅토리아 폭포","en":"Victoria Falls","zh":"维多利亚瀑布","ck":"리빙스턴","ce":"Livingstone","cz":"利文斯通","wiki":"Victoria Falls"},{"c":"zw","ko":"그레이트 짐바브웨","en":"Great Zimbabwe","zh":"大津巴布韦","ck":"마스빙고","ce":"Masvingo","cz":"马斯温戈","wiki":"Great Zimbabwe"},{"c":"ug","ko":"머치슨 폭포","en":"Murchison Falls","zh":"默奇森瀑布","ck":"우간다","ce":"Uganda","cz":"乌干达","wiki":"Murchison Falls"},{"c":"mg","ko":"바오밥 거리","en":"Avenue of the Baobabs","zh":"猴面包树大道","ck":"모론다바","ce":"Morondava","cz":"穆龙达瓦","wiki":"Avenue of the Baobabs"},{"c":"mg","ko":"칭기 데 베마라하","en":"Tsingy de Bemaraha","zh":"贝马拉哈石林","ck":"멜라키","ce":"Melaky","cz":"梅拉基","wiki":"Tsingy de Bemaraha National Park"},{"c":"mu","ko":"르 몬 브라방","en":"Le Morne Brabant","zh":"莫纳山","ck":"모리셔스","ce":"Mauritius","cz":"毛里求斯","wiki":"Le Morne Brabant"},{"c":"sn","ko":"아프리카 르네상스 동상","en":"African Renaissance Monument","zh":"非洲复兴纪念碑","ck":"다카르","ce":"Dakar","cz":"达喀尔","wiki":"African Renaissance Monument"},{"c":"sn","ko":"고레섬","en":"Gorée","zh":"戈雷岛","ck":"다카르","ce":"Dakar","cz":"达喀尔","wiki":"Gorée"},{"c":"tn","ko":"엘젬 원형극장","en":"Amphitheatre of El Jem","zh":"杰姆圆形剧场","ck":"엘젬","ce":"El Djem","cz":"杰姆","wiki":"Amphitheatre of El Jem"},{"c":"tn","ko":"카르타고","en":"Carthage","zh":"迦太基","ck":"튀니스","ce":"Tunis","cz":"突尼斯","wiki":"Carthage"},{"c":"dz","ko":"노트르담 다프리크","en":"Notre Dame d’Afrique","zh":"非洲圣母院","ck":"알제","ce":"Algiers","cz":"阿尔及尔","wiki":"Notre Dame d’Afrique"},{"c":"dz","ko":"타실리 나제르","en":"Tassili n’Ajjer","zh":"塔西利-纳杰尔","ck":"사하라","ce":"Sahara","cz":"撒哈拉","wiki":"Tassili n’Ajjer"},{"c":"mt","ko":"성 요한 공동대성당","en":"St. John’s Co-Cathedral","zh":"圣约翰副主教座堂","ck":"발레타","ce":"Valletta","cz":"瓦莱塔","wiki":"St. John’s Co-Cathedral"},{"c":"mt","ko":"임디나","en":"Mdina","zh":"姆迪纳","ck":"임디나","ce":"Mdina","cz":"姆迪纳","wiki":"Mdina"},{"c":"lu","ko":"비앙덴 성","en":"Vianden Castle","zh":"维安登城堡","ck":"비앙덴","ce":"Vianden","cz":"维安登","wiki":"Vianden Castle"},{"c":"li","ko":"파두츠 성","en":"Vaduz Castle","zh":"瓦杜兹城堡","ck":"파두츠","ce":"Vaduz","cz":"瓦杜兹","wiki":"Vaduz Castle"},{"c":"mc","ko":"몬테카를로 카지노","en":"Monte Carlo Casino","zh":"蒙特卡洛赌场","ck":"모나코","ce":"Monaco","cz":"摩纳哥","wiki":"Monte Carlo Casino"},{"c":"sm","ko":"과이타 탑","en":"Guaita","zh":"瓜伊塔塔","ck":"산마리노","ce":"San Marino","cz":"圣马力诺","wiki":"Guaita"},{"c":"me","ko":"코토르 만","en":"Bay of Kotor","zh":"科托尔湾","ck":"코토르","ce":"Kotor","cz":"科托尔","wiki":"Bay of Kotor"},{"c":"al","ko":"베라트 성","en":"Berat Castle","zh":"培拉特城堡","ck":"베라트","ce":"Berat","cz":"培拉特","wiki":"Berat Castle"},{"c":"ba","ko":"스타리 모스트","en":"Stari Most","zh":"莫斯塔尔古桥","ck":"모스타르","ce":"Mostar","cz":"莫斯塔尔","wiki":"Stari Most"},{"c":"rs","ko":"베오그라드 요새","en":"Belgrade Fortress","zh":"贝尔格莱德堡垒","ck":"베오그라드","ce":"Belgrade","cz":"贝尔格莱德","wiki":"Belgrade Fortress"},{"c":"bg","ko":"알렉산더 네프스키 대성당","en":"Alexander Nevsky Cathedral","zh":"亚历山大·涅夫斯基主教座堂","ck":"소피아","ce":"Sofia","cz":"索非亚","wiki":"Alexander Nevsky Cathedral, Sofia"},{"c":"bg","ko":"릴라 수도원","en":"Rila Monastery","zh":"里拉修道院","ck":"릴라","ce":"Rila","cz":"里拉","wiki":"Rila Monastery"},{"c":"md","ko":"오르헤이울 베키","en":"Orheiul Vechi","zh":"旧奥尔海","ck":"오르헤이","ce":"Orhei","cz":"奥尔海","wiki":"Orheiul Vechi"},{"c":"ec","ko":"갈라파고스 제도","en":"Galápagos Islands","zh":"加拉帕戈斯群岛","ck":"갈라파고스","ce":"Galápagos","cz":"加拉帕戈斯","wiki":"Galápagos Islands"},{"c":"ec","ko":"미타드 델 문도","en":"Ciudad Mitad del Mundo","zh":"赤道纪念碑","ck":"키토","ce":"Quito","cz":"基多","wiki":"Ciudad Mitad del Mundo"},{"c":"co","ko":"황금 박물관","en":"Gold Museum","zh":"黄金博物馆","ck":"보고타","ce":"Bogotá","cz":"波哥大","wiki":"Gold Museum, Bogotá"},{"c":"co","ko":"시파키라 소금성당","en":"Salt Cathedral of Zipaquirá","zh":"锡帕基拉盐教堂","ck":"시파키라","ce":"Zipaquirá","cz":"锡帕基拉","wiki":"Salt Cathedral of Zipaquirá"},{"c":"ve","ko":"앙헬 폭포","en":"Angel Falls","zh":"安赫尔瀑布","ck":"카나이마","ce":"Canaima","cz":"卡奈玛","wiki":"Angel Falls"},{"c":"bo","ko":"우유니 소금사막","en":"Salar de Uyuni","zh":"乌尤尼盐沼","ck":"우유니","ce":"Uyuni","cz":"乌尤尼","wiki":"Salar de Uyuni"},{"c":"bo","ko":"티와나쿠","en":"Tiwanaku","zh":"蒂瓦纳库","ck":"라파스","ce":"La Paz","cz":"拉巴斯","wiki":"Tiwanaku"},{"c":"py","ko":"이타이푸댐","en":"Itaipu Dam","zh":"伊泰普水电站","ck":"알토파라나","ce":"Alto Paraná","cz":"上巴拉那","wiki":"Itaipu Dam"},{"c":"uy","ko":"팔라시오 살보","en":"Palacio Salvo","zh":"萨尔沃宫","ck":"몬테비데오","ce":"Montevideo","cz":"蒙得维的亚","wiki":"Palacio Salvo"},{"c":"cr","ko":"아레날 화산","en":"Arenal Volcano","zh":"阿雷纳尔火山","ck":"알라후엘라","ce":"Alajuela","cz":"阿拉胡埃拉","wiki":"Arenal Volcano"},{"c":"cr","ko":"몬테베르데 운무림","en":"Monteverde Cloud Forest Reserve","zh":"蒙特韦尔德云雾森林","ck":"몬테베르데","ce":"Monteverde","cz":"蒙特韦尔德","wiki":"Monteverde Cloud Forest Reserve"},{"c":"pa","ko":"파나마 운하","en":"Panama Canal","zh":"巴拿马运河","ck":"파나마","ce":"Panama","cz":"巴拿马","wiki":"Panama Canal"},{"c":"gt","ko":"티칼","en":"Tikal","zh":"蒂卡尔","ck":"페텐","ce":"Petén","cz":"佩滕","wiki":"Tikal"},{"c":"hn","ko":"코판","en":"Copán","zh":"科潘","ck":"코판","ce":"Copán","cz":"科潘","wiki":"Copán"},{"c":"sv","ko":"산타아나 화산","en":"Santa Ana Volcano","zh":"圣安娜火山","ck":"산타아나","ce":"Santa Ana","cz":"圣安娜","wiki":"Santa Ana Volcano"},{"c":"ni","ko":"레온 대성당","en":"León Cathedral","zh":"莱昂大教堂","ck":"레온","ce":"León","cz":"莱昂","wiki":"León Cathedral, Nicaragua"},{"c":"cu","ko":"엘 카피톨리오","en":"El Capitolio","zh":"国会大厦","ck":"아바나","ce":"Havana","cz":"哈瓦那","wiki":"El Capitolio"},{"c":"cu","ko":"올드 아바나","en":"Old Havana","zh":"哈瓦那旧城","ck":"아바나","ce":"Havana","cz":"哈瓦那","wiki":"Old Havana"},{"c":"jm","ko":"던스 리버 폭포","en":"Dunn’s River Falls","zh":"邓恩河瀑布","ck":"오초리오스","ce":"Ocho Rios","cz":"奥乔里奥斯","wiki":"Dunn’s River Falls"},{"c":"do","ko":"산토도밍고 식민도시","en":"Colonial City of Santo Domingo","zh":"圣多明各殖民城","ck":"산토도밍고","ce":"Santo Domingo","cz":"圣多明各","wiki":"Ciudad Colonial (Santo Domingo)"},{"c":"ht","ko":"라페리에르 요새","en":"Citadelle Laferrière","zh":"拉费里耶尔城堡","ck":"밀로","ce":"Milot","cz":"米洛","wiki":"Citadelle Laferrière"}];
 
 
@@ -439,6 +1379,80 @@ LM.forEach(l=>{
   l.srcs=[...new Set(srcs.filter(Boolean))];
   l.img=l.srcs[0]||'';
 });
+const FAMOUS_LANDMARK_ORDER=[
+  'Eiffel Tower','Louvre Museum','Palace of Versailles','Mont Saint-Michel','Arc de Triomphe',
+  'Great Wall of China','Forbidden City','Terracotta Army','Potala Palace',
+  'Mount Fuji','Tokyo Tower','Kinkaku-ji','Fushimi Inari-taisha','Himeji Castle',
+  'Statue of Liberty','Golden Gate Bridge','Grand Canyon','Mount Rushmore','White House','Empire State Building','Yellowstone National Park','Hollywood Sign',
+  'Big Ben','Tower Bridge','Stonehenge','Buckingham Palace','Edinburgh Castle','Tower of London','Westminster Abbey',
+  'Colosseum','Leaning Tower of Pisa','Trevi Fountain','Milan Cathedral','Grand Canal','Florence Cathedral','Pompeii',
+  'Taj Mahal','Red Fort','Gateway of India','Qutb Minar',
+  'Christ the Redeemer','Sugarloaf Mountain','Iguazu Falls',
+  'Giza pyramid complex','Great Sphinx of Giza','Abu Simbel','Karnak Temple',
+  'Sydney Opera House','Uluru','Great Barrier Reef','Sydney Harbour Bridge',
+  'Brandenburg Gate','Neuschwanstein Castle','Cologne Cathedral','Berlin Wall',
+  'Sagrada Família','Park Güell','Alhambra','Prado Museum',
+  'Parthenon','Meteora','Santorini',
+  'Saint Basil’s Cathedral','Moscow Kremlin','Hermitage Museum',
+  'Hagia Sophia','Blue Mosque','Cappadocia','Topkapı Palace','Ephesus',
+  'Burj Khalifa','Burj Al Arab','Sheikh Zayed Grand Mosque','Palm Jumeirah',
+  'Machu Picchu','Nazca Lines','Chichen Itza','Teotihuacan',
+  'Angkor Wat','Bayon','Ta Prohm',
+  'Petra','Wadi Rum',
+  'Gyeongbokgung Palace','N Seoul Tower','Lotte World Tower','Bulguksa',
+  'Marina Bay Sands','Gardens by the Bay','Merlion','Jewel Changi Airport',
+  'Rijksmuseum','Anne Frank House',
+  'Atomium','Grand-Place',
+  'Vienna State Opera','Schönbrunn Palace','Hofburg',
+  'Charles Bridge','Prague Castle','Wawel Castle','Bran Castle','Hungarian Parliament Building','Fisherman’s Bastion',
+  'Lake Bled','Hallgrímskirkja','Blue Lagoon','Mount Kilimanjaro','Serengeti','Victoria Falls','Avenue of the Baobabs',
+  'Galápagos Islands','Salar de Uyuni','Angel Falls','Panama Canal','Tikal','Taipei 101','Sigiriya','Mount Everest',
+  'Shwedagon Pagoda','Bagan','Persepolis','Registan','Flame Towers','Walls of Dubrovnik','Rila Monastery','Stari Most',
+  'Monte Carlo Casino','Bay of Kotor'
+];
+const LANDMARK_TARGET_COUNT=120;
+function buildFamousLandmarkPool(){
+  const byKey=new Map();
+  LM.forEach(l=>{
+    [l.en,l.ko,l.zh,l.wiki].filter(Boolean).forEach(k=>{
+      if(!byKey.has(k))byKey.set(k,l);
+    });
+  });
+  const picked=[];
+  const seen=new Set();
+  FAMOUS_LANDMARK_ORDER.forEach(k=>{
+    const item=byKey.get(k);
+    if(item&&!seen.has(item.en)){
+      picked.push(item);
+      seen.add(item.en);
+    }
+  });
+  if(picked.length<100){
+    LM.forEach(l=>{
+      if(picked.length>=LANDMARK_TARGET_COUNT)return;
+      if(!seen.has(l.en)){
+        picked.push(l);
+        seen.add(l.en);
+      }
+    });
+  }
+  return picked.slice(0,LANDMARK_TARGET_COUNT);
+}
+const LANDMARK_POOL=buildFamousLandmarkPool();
+const CAP_EN={fr:'Paris',gb:'London',de:'Berlin',it:'Rome',es:'Madrid',pt:'Lisbon',nl:'Amsterdam',be:'Brussels',ch:'Bern',at:'Vienna',se:'Stockholm',no:'Oslo',dk:'Copenhagen',fi:'Helsinki',is:'Reykjavik',ie:'Dublin',pl:'Warsaw',cz:'Prague',hu:'Budapest',ro:'Bucharest',bg:'Sofia',hr:'Zagreb',sk:'Bratislava',si:'Ljubljana',rs:'Belgrade',ba:'Sarajevo',me:'Podgorica',mk:'Skopje',al:'Tirana',md:'Chisinau',ee:'Tallinn',lv:'Riga',lt:'Vilnius',ua:'Kyiv',by:'Minsk',ru:'Moscow',ge:'Tbilisi',am:'Yerevan',az:'Baku',us:'Washington D.C.',ca:'Ottawa',mx:'Mexico City',cu:'Havana',gt:'Guatemala City',pa:'Panama City',cr:'San José',br:'Brasília',ar:'Buenos Aires',cl:'Santiago',pe:'Lima',co:'Bogotá',ve:'Caracas',bo:'Sucre',ec:'Quito',uy:'Montevideo',py:'Asunción',cn:'Beijing',jp:'Tokyo',kr:'Seoul',kp:'Pyongyang',mn:'Ulaanbaatar',tw:'Taipei',th:'Bangkok',vn:'Hanoi',id:'Jakarta',ph:'Manila',my:'Kuala Lumpur',sg:'Singapore',mm:'Naypyidaw',kh:'Phnom Penh',la:'Vientiane',in:'New Delhi',pk:'Islamabad',bd:'Dhaka',np:'Kathmandu',lk:'Sri Jayawardenepura Kotte',kz:'Astana',uz:'Tashkent',tr:'Ankara',ir:'Tehran',iq:'Baghdad',sa:'Riyadh',ae:'Abu Dhabi',jo:'Amman',sy:'Damascus',kw:'Kuwait City',qa:'Doha',bh:'Manama',om:'Muscat',ye:"Sana'a",eg:'Cairo',ma:'Rabat',tn:'Tunis',dz:'Algiers',et:'Addis Ababa',ke:'Nairobi',tz:'Dodoma',ng:'Abuja',gh:'Accra',sn:'Dakar',za:'Pretoria',zw:'Harare',zm:'Lusaka',ao:'Luanda',mz:'Maputo',rw:'Kigali',mg:'Antananarivo',ug:'Kampala',cd:'Kinshasa',ci:"Yamoussoukro",cm:'Yaoundé',au:'Canberra',nz:'Wellington',fj:'Suva',mu:'Port Louis',ly:'Tripoli',sd:'Khartoum'};
+const CAP_FAMOUS=new Set(['fr','gb','de','it','es','pt','nl','be','ch','at','se','no','dk','fi','is','ie','pl','cz','hu','ro','bg','hr','sk','si','rs','ba','me','mk','al','md','ee','lv','lt','ua','by','ru','ge','am','az','us','ca','mx','cu','gt','pa','cr','br','ar','cl','pe','co','ve','bo','ec','uy','py','cn','jp','kr','kp','mn','tw','th','vn','id','ph','my','sg','mm','kh','la','in','pk','bd','np','lk','kz','uz','tr','ir','iq','sa','ae','jo','sy','kw','qa','bh','om','ye','eg','ma','tn','dz','et','ke','tz','ng','gh','sn','za','zw','zm','ao','mz','rw','mg','ug','cd','ci','cm','au','nz','fj','mu','ly','sd']);
+function prepCap(m){
+  const base=activeCountries().filter(c=>CAP_FAMOUS.has(c[0])&&CAP[c[0]]&&CAP_EN[c[0]]);
+  const pool=m==='challenge'?sh(base).slice(0,challengeTotal()):sh([...base]);
+  return pool.map(c=>{
+    const sm=base.filter(x=>x[2]===c[2]&&x[0]!==c[0]);
+    const df=base.filter(x=>x[2]!==c[2]&&x[0]!==c[0]);
+    let wr=sh(sm).slice(0,3);
+    if(wr.length<3)wr=[...wr,...sh(df).slice(0,3-wr.length)];
+    const opts=sh([c,...wr.slice(0,3)]);
+    return{type:'cap',code:c[0],name:c[1],reg:c[2],cap:CAP[c[0]],opts,cor:opts.findIndex(x=>x[0]===c[0])};
+  });
+}
 async function fetchWikiThumb(lm){
   if(!lm||!lm.wiki)return '';
   const key=lm.wiki;
@@ -474,18 +1488,17 @@ async function loadLandmarkImage(img,lm){
   img.dataset.idx='0';
   img.dataset.srcs=JSON.stringify(srcs);
   img.alt=lmName(lm)+' photo';
-  if(srcs[0]){img.style.display='block';if(fb)fb.style.display='none';img.src=srcs[0];return;}
   img.style.display='none';
   if(fb)fb.style.display='flex';
   const thumb=await fetchWikiThumb(lm);
   if(img.dataset.token!==token)return;
-  if(thumb){
-    srcs=[thumb];
+  if(thumb&&!srcs.includes(thumb))srcs.unshift(thumb);
+  if(srcs[0]){
     img.dataset.idx='0';
     img.dataset.srcs=JSON.stringify(srcs);
     if(fb)fb.style.display='none';
     img.style.display='block';
-    img.src=thumb;
+    img.src=srcs[0];
   }
 }
 function preloadLandmarkImage(q){
@@ -498,89 +1511,552 @@ function preloadLandmarkImage(q){
 }
 
 const GI={S:{e:'🏆',c:'#f59e0b'},A:{e:'🥇',c:'#c0c0c0'},B:{e:'🥈',c:'#60a5fa'},C:{e:'🥉',c:'#4ade80'},D:{e:'📚',c:'#64748b'}};
+function gradeBadge(g){
+  const uid=g+'_'+Math.random().toString(36).slice(2,6);
+  if(g==='S') return `<svg class="grade-badge" viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <radialGradient id="sb${uid}" cx="50%" cy="35%" r="70%">
+        <stop offset="0%" stop-color="#fef08a"/>
+        <stop offset="45%" stop-color="#b45309"/>
+        <stop offset="100%" stop-color="#1c0a00"/>
+      </radialGradient>
+      <radialGradient id="sc${uid}" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fde047" stop-opacity=".9"/>
+        <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="sr${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fde047"/>
+        <stop offset="50%" stop-color="#f59e0b"/>
+        <stop offset="100%" stop-color="#ea580c"/>
+      </linearGradient>
+      <filter id="sg${uid}">
+        <feGaussianBlur stdDeviation="2.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <!-- Outer glow ring -->
+    <circle cx="60" cy="60" r="56" fill="url(#sb${uid})"/>
+    <circle cx="60" cy="60" r="56" fill="url(#sc${uid})" opacity=".4"/>
+    <circle cx="60" cy="60" r="51" fill="none" stroke="url(#sr${uid})" stroke-width="5"/>
+    <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(253,224,71,.25)" stroke-width="1.5"/>
+    <!-- Crown body -->
+    <g filter="url(#sg${uid})">
+      <path d="M26 72 L26 50 L38 62 L60 38 L82 62 L94 50 L94 72 Z" fill="url(#sr${uid})"/>
+      <path d="M26 72 L94 72 L90 82 L30 82 Z" fill="#f59e0b"/>
+      <line x1="30" y1="82" x2="90" y2="82" stroke="#fde047" stroke-width="2"/>
+    </g>
+    <!-- Crown gems -->
+    <circle cx="60" cy="40" r="7" fill="#f8fafc" opacity=".95"/>
+    <circle cx="60" cy="40" r="4" fill="#7dd3fc"/>
+    <circle cx="60" cy="40" r="2" fill="#e0f2fe"/>
+    <circle cx="38" cy="63" r="5" fill="#fca5a5" opacity=".9"/>
+    <circle cx="38" cy="63" r="2.5" fill="#fef2f2"/>
+    <circle cx="82" cy="63" r="5" fill="#86efac" opacity=".9"/>
+    <circle cx="82" cy="63" r="2.5" fill="#f0fdf4"/>
+    <!-- Sparkles -->
+    <g fill="#fef08a" opacity=".9">
+      <path d="M18 22 l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
+      <path d="M99 18 l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5z"/>
+      <path d="M14 76 l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z"/>
+      <path d="M104 70 l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z"/>
+    </g>
+    <!-- Grade letter -->
+    <rect x="38" y="87" width="44" height="20" rx="10" fill="rgba(2,6,23,.82)"/>
+    <text x="60" y="102" text-anchor="middle" font-size="14" font-weight="900" fill="#fde047" font-family="Arial Black, Arial, sans-serif" letter-spacing="1">GRADE S</text>
+  </svg>`;
+
+  if(g==='A') return `<svg class="grade-badge" viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <radialGradient id="ab${uid}" cx="50%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="#d1fae5"/>
+        <stop offset="50%" stop-color="#065f46"/>
+        <stop offset="100%" stop-color="#022c22"/>
+      </radialGradient>
+      <linearGradient id="ar${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#6ee7b7"/>
+        <stop offset="50%" stop-color="#10b981"/>
+        <stop offset="100%" stop-color="#0d9488"/>
+      </linearGradient>
+      <linearGradient id="am${uid}" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#f0fdf4"/>
+        <stop offset="100%" stop-color="#6ee7b7"/>
+      </linearGradient>
+      <filter id="ag${uid}"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <circle cx="60" cy="60" r="56" fill="url(#ab${uid})"/>
+    <circle cx="60" cy="60" r="51" fill="none" stroke="url(#ar${uid})" stroke-width="5"/>
+    <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(110,231,183,.2)" stroke-width="1.5"/>
+    <!-- Mountain range -->
+    <g filter="url(#ag${uid})">
+      <path d="M20 78 L42 38 L60 62 L72 48 L100 78 Z" fill="url(#am${uid})" opacity=".92"/>
+      <path d="M20 78 L42 38 L60 62Z" fill="#a7f3d0" opacity=".7"/>
+      <!-- Snow caps -->
+      <path d="M42 38 L36 52 L48 52 Z" fill="white" opacity=".88"/>
+      <path d="M72 48 L67 57 L77 57 Z" fill="white" opacity=".78"/>
+    </g>
+    <!-- Stars in sky -->
+    <circle cx="30" cy="35" r="2" fill="#d1fae5" opacity=".7"/>
+    <circle cx="50" cy="28" r="1.5" fill="#a7f3d0" opacity=".6"/>
+    <circle cx="90" cy="32" r="2" fill="#6ee7b7" opacity=".65"/>
+    <circle cx="75" cy="25" r="1" fill="#d1fae5" opacity=".5"/>
+    <!-- Aurora streaks -->
+    <path d="M15 45 Q40 38 65 44 Q85 49 105 42" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" opacity=".45"/>
+    <path d="M15 50 Q42 43 68 49 Q88 53 105 47" fill="none" stroke="#6ee7b7" stroke-width="1.5" stroke-linecap="round" opacity=".3"/>
+    <!-- Grade -->
+    <rect x="38" y="87" width="44" height="20" rx="10" fill="rgba(2,6,23,.82)"/>
+    <text x="60" y="102" text-anchor="middle" font-size="14" font-weight="900" fill="#6ee7b7" font-family="Arial Black, Arial, sans-serif" letter-spacing="1">GRADE A</text>
+  </svg>`;
+
+  if(g==='B') return `<svg class="grade-badge" viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <radialGradient id="bb${uid}" cx="50%" cy="35%" r="72%">
+        <stop offset="0%" stop-color="#bfdbfe"/>
+        <stop offset="50%" stop-color="#1e3a8a"/>
+        <stop offset="100%" stop-color="#0a0f2e"/>
+      </radialGradient>
+      <linearGradient id="br${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#93c5fd"/>
+        <stop offset="50%" stop-color="#3b82f6"/>
+        <stop offset="100%" stop-color="#06b6d4"/>
+      </linearGradient>
+      <radialGradient id="bgl${uid}" cx="42%" cy="38%" r="52%">
+        <stop offset="0%" stop-color="#dbeafe" stop-opacity=".6"/>
+        <stop offset="100%" stop-color="#1e3a8a" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="60" cy="60" r="56" fill="url(#bb${uid})"/>
+    <circle cx="60" cy="60" r="51" fill="none" stroke="url(#br${uid})" stroke-width="5"/>
+    <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(147,197,253,.22)" stroke-width="1.5"/>
+    <!-- Globe -->
+    <circle cx="60" cy="56" r="26" fill="#1d4ed8" opacity=".85"/>
+    <circle cx="60" cy="56" r="26" fill="url(#bgl${uid})"/>
+    <!-- Continent shapes -->
+    <path d="M44 44 Q50 40 56 44 Q58 50 54 54 Q48 56 44 52 Z" fill="#4ade80" opacity=".75"/>
+    <path d="M62 44 Q70 42 74 48 Q76 55 70 58 Q64 58 62 54 Z" fill="#4ade80" opacity=".7"/>
+    <path d="M50 60 Q56 57 60 62 Q62 68 56 70 Q50 70 48 66 Z" fill="#4ade80" opacity=".65"/>
+    <path d="M66 62 Q70 60 72 64 Q72 68 68 68 Z" fill="#4ade80" opacity=".5"/>
+    <!-- Globe grid lines -->
+    <ellipse cx="60" cy="56" rx="26" ry="10" fill="none" stroke="#93c5fd" stroke-width=".8" opacity=".35"/>
+    <ellipse cx="60" cy="56" rx="10" ry="26" fill="none" stroke="#93c5fd" stroke-width=".8" opacity=".35"/>
+    <line x1="34" y1="56" x2="86" y2="56" stroke="#93c5fd" stroke-width=".8" opacity=".35"/>
+    <!-- Globe outline -->
+    <circle cx="60" cy="56" r="26" fill="none" stroke="#93c5fd" stroke-width="2" opacity=".6"/>
+    <!-- Orbit ring -->
+    <ellipse cx="60" cy="56" rx="38" ry="14" fill="none" stroke="#60a5fa" stroke-width="2" opacity=".5" stroke-dasharray="5 3"/>
+    <circle cx="98" cy="56" r="4" fill="#fde047"/>
+    <!-- Grade -->
+    <rect x="38" y="87" width="44" height="20" rx="10" fill="rgba(2,6,23,.82)"/>
+    <text x="60" y="102" text-anchor="middle" font-size="14" font-weight="900" fill="#93c5fd" font-family="Arial Black, Arial, sans-serif" letter-spacing="1">GRADE B</text>
+  </svg>`;
+
+  if(g==='C') return `<svg class="grade-badge" viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <radialGradient id="cb${uid}" cx="50%" cy="35%" r="72%">
+        <stop offset="0%" stop-color="#ccfbf1"/>
+        <stop offset="50%" stop-color="#134e4a"/>
+        <stop offset="100%" stop-color="#042f2e"/>
+      </radialGradient>
+      <linearGradient id="cr${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#5eead4"/>
+        <stop offset="100%" stop-color="#2dd4bf"/>
+      </linearGradient>
+    </defs>
+    <circle cx="60" cy="60" r="56" fill="url(#cb${uid})"/>
+    <circle cx="60" cy="60" r="51" fill="none" stroke="url(#cr${uid})" stroke-width="5"/>
+    <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(94,234,212,.2)" stroke-width="1.5"/>
+    <!-- Compass rose base -->
+    <circle cx="60" cy="55" r="22" fill="rgba(15,118,110,.45)" stroke="#2dd4bf" stroke-width="1.5"/>
+    <!-- Compass tick marks -->
+    <g stroke="#99f6e4" stroke-width="1" opacity=".6">
+      <line x1="60" y1="35" x2="60" y2="38"/><line x1="60" y1="72" x2="60" y2="75"/>
+      <line x1="40" y1="55" x2="43" y2="55"/><line x1="77" y1="55" x2="80" y2="55"/>
+      <line x1="46" y1="41" x2="48" y2="43"/><line x1="72" y1="67" x2="74" y2="69"/>
+      <line x1="74" y1="41" x2="72" y2="43"/><line x1="48" y1="67" x2="46" y2="69"/>
+    </g>
+    <!-- N S E W labels -->
+    <text x="60" y="42" text-anchor="middle" font-size="6" fill="#f0fdfa" font-weight="700" font-family="Arial">N</text>
+    <text x="60" y="72" text-anchor="middle" font-size="5" fill="#99f6e4" font-weight="700" font-family="Arial">S</text>
+    <text x="79" y="57" text-anchor="middle" font-size="5" fill="#99f6e4" font-weight="700" font-family="Arial">E</text>
+    <text x="41" y="57" text-anchor="middle" font-size="5" fill="#99f6e4" font-weight="700" font-family="Arial">W</text>
+    <!-- Compass needle -->
+    <path d="M60 55 L57 42 L60 47 L63 42 Z" fill="#f87171" opacity=".9"/>
+    <path d="M60 55 L57 68 L60 62 L63 68 Z" fill="#e0f2fe" opacity=".85"/>
+    <circle cx="60" cy="55" r="3.5" fill="#0f172a" stroke="#2dd4bf" stroke-width="1.5"/>
+    <!-- Grade -->
+    <rect x="38" y="87" width="44" height="20" rx="10" fill="rgba(2,6,23,.82)"/>
+    <text x="60" y="102" text-anchor="middle" font-size="14" font-weight="900" fill="#5eead4" font-family="Arial Black, Arial, sans-serif" letter-spacing="1">GRADE C</text>
+  </svg>`;
+
+  // D grade
+  return `<svg class="grade-badge" viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <radialGradient id="db${uid}" cx="50%" cy="35%" r="72%">
+        <stop offset="0%" stop-color="#fef3c7"/>
+        <stop offset="50%" stop-color="#92400e"/>
+        <stop offset="100%" stop-color="#1c0a00"/>
+      </radialGradient>
+      <linearGradient id="dr${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fcd34d"/>
+        <stop offset="100%" stop-color="#f87171"/>
+      </linearGradient>
+      <linearGradient id="dbk${uid}" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%" stop-color="#fef3c7"/>
+        <stop offset="100%" stop-color="#fbbf24"/>
+      </linearGradient>
+    </defs>
+    <circle cx="60" cy="60" r="56" fill="url(#db${uid})"/>
+    <circle cx="60" cy="60" r="51" fill="none" stroke="url(#dr${uid})" stroke-width="5"/>
+    <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(252,211,77,.2)" stroke-width="1.5"/>
+    <!-- Open book -->
+    <!-- Left page -->
+    <path d="M60 38 Q46 36 32 40 L32 74 Q46 70 60 72 Z" fill="url(#dbk${uid})" opacity=".92"/>
+    <!-- Right page -->
+    <path d="M60 38 Q74 36 88 40 L88 74 Q74 70 60 72 Z" fill="#fef9c3" opacity=".88"/>
+    <!-- Spine -->
+    <rect x="58" y="37" width="4" height="36" rx="2" fill="#b45309" opacity=".7"/>
+    <!-- Lines on left page -->
+    <g stroke="#92400e" stroke-width="1.2" stroke-linecap="round" opacity=".4">
+      <line x1="38" y1="48" x2="56" y2="47"/>
+      <line x1="38" y1="54" x2="56" y2="53"/>
+      <line x1="38" y1="60" x2="56" y2="59"/>
+      <line x1="38" y1="66" x2="56" y2="65"/>
+    </g>
+    <!-- Lines on right page -->
+    <g stroke="#92400e" stroke-width="1.2" stroke-linecap="round" opacity=".4">
+      <line x1="64" y1="47" x2="82" y2="48"/>
+      <line x1="64" y1="53" x2="82" y2="54"/>
+      <line x1="64" y1="59" x2="82" y2="60"/>
+      <line x1="64" y1="65" x2="82" y2="66"/>
+    </g>
+    <!-- Small globe icon on right page -->
+    <circle cx="76" cy="52" r="6" fill="none" stroke="#d97706" stroke-width="1" opacity=".5"/>
+    <ellipse cx="76" cy="52" rx="6" ry="2.5" fill="none" stroke="#d97706" stroke-width=".8" opacity=".4"/>
+    <line x1="76" y1="46" x2="76" y2="58" stroke="#d97706" stroke-width=".8" opacity=".4"/>
+    <!-- Grade -->
+    <rect x="38" y="87" width="44" height="20" rx="10" fill="rgba(2,6,23,.82)"/>
+    <text x="60" y="102" text-anchor="middle" font-size="14" font-weight="900" fill="#fcd34d" font-family="Arial Black, Arial, sans-serif" letter-spacing="1">GRADE D</text>
+  </svg>`;
+}
 const LS=['A','B','C','D'];
 const EASY_CODES='kr jp cn us fr gb it de es au ca br in eg th vn sg nl ch se no fi dk be at gr tr ae mx'.split(' ');
 const NORMAL_CODES='kr jp cn us fr gb it de es au ca br in eg th vn sg nl ch se no fi dk be at gr tr ae mx id my ph ru nz ie pt pl cz hu ro ua ar cl pe co za ma sa il jo kh la tw hk mn np lk pk bd qa kw om'.split(' ');
 const LM_EN={};
-function activeCodes(){return difficulty==='easy'?EASY_CODES:(difficulty==='normal'?NORMAL_CODES:C.map(x=>x[0]));}
+function activeCodes(){return C.map(x=>x[0]);}
 function activeCountries(){const set=new Set(activeCodes());return C.filter(x=>set.has(x[0]));}
-function challengeTotal(){if(qtype==='flag')return difficulty==='easy'?15:(difficulty==='normal'?25:30);return difficulty==='easy'?10:(difficulty==='normal'?15:20);}
-function maxTime(){return difficulty==='easy'?15:(difficulty==='normal'?10:7);}
+function challengeTotal(){return 60;}
+function maxTime(){return mode==='challenge'?60:10;}
+function timeLabel(){return lang==='zh'?'10秒':(lang==='en'?'10s':'10초');}
 function scoreWord(){return lang==='zh'?'分':(lang==='en'?' pts':'점');}
 
 // ============================================================
 // STATE
 // ============================================================
-let lang='ko', qtype='flag', difficulty='easy';
-let mode,nick,qs,qi,sc,lv,as,ch,ti,tl,t0,bS=0,bC=0,ltab='survival',wop=false,voiceOn=false,autoNextTimer=null;
+let lang='ko', qtype='flag', difficulty='all';
+let mode,nick,qs,qi,sc,lv,as,ch,ti,tl,t0,bS=0,bC=0,bD=0,ltab='survival',wop=false,voiceOn=false,bgmEnabled=true,sfxEnabled=true,bgmVolume=.35,sfxVolume=.7,autoNextTimer=null,comboCount=0,gameActive=false;
 
 // ============================================================
 // BGM
 // ============================================================
 const BGM=(()=>{
-  let ctx=null,playing=false,nodes=[],loopTO=null,trackIdx=0;
-  const TRACKS=[
-    // Track 1: C major pentatonic - upbeat world explorer
-    [523,659,784,1047,784,659,523,392,523,659,784,659,784,1047,784,523],
-    // Track 2: G pentatonic - playful discovery
-    [392,494,587,784,587,494,392,330,392,494,587,494,392,330,294,330],
-    // Track 3: D minor - mysterious landmarks
-    [294,349,440,523,440,349,294,262,294,349,440,349,294,220,262,294]
+  let ctx=null,mGain=null,sfxGain=null,active=false,schedRef=null;
+  let beat=0,secI=0,nextTime=0,sceneId='home';
+
+  const hz=n=>440*Math.pow(2,(n-69)/12);
+
+  // Pre-computed bass guitar distortion curve
+  const BDIST=(()=>{
+    const c=new Float32Array(512);
+    for(let i=0;i<512;i++){const x=i*2/512-1;c[i]=(Math.PI+52)*x/(Math.PI+52*Math.abs(x));}
+    return c;
+  })();
+
+  // 3 sections cycling A→B→C→A — each plays 2 full chord rounds before switching
+  // Each chord: b=[4 walking bass MIDI notes, one per beat], p=pad notes, m=melody per beat
+  // Bass notes walk through chord tones each beat → creates "moving" bass feel
+  const SECS=[
+    { bpm:68, chords:[ // A — Majestic exploration, Cmaj feel
+      {b:[48,52,55,57], p:[48,52,55,59], m:[72,0,74,0]},   // Cmaj  C→E→G→A
+      {b:[45,48,52,53], p:[45,48,52,55], m:[0,69,0,72]},   // Am    A→C→E→F
+      {b:[41,45,48,50], p:[41,45,48,52], m:[67,0,69,0]},   // Fmaj  F→A→C→D
+      {b:[43,47,50,52], p:[43,47,50,55], m:[71,72,0,74]},  // Gsus  G→B→D→E
+      {b:[48,55,52,50], p:[48,52,55,59], m:[76,74,72,0]},  // Cmaj  C→G→E→D (descend)
+      {b:[45,48,43,41], p:[45,48,52,55], m:[0,72,69,0]},   // Am    A→C→G→F
+      {b:[38,41,45,46], p:[38,41,45,50], m:[65,67,0,69]},  // Bb    Bb→D→F→F#
+      {b:[43,47,50,48], p:[43,47,50,55], m:[71,0,72,74]},  // Gsus  G→B→D→C
+    ]},
+    { bpm:86, chords:[ // B — Adventure, Am driving
+      {b:[45,48,52,55], p:[45,48,52],    m:[69,72,0,74]},  // Am    A→C→E→G
+      {b:[41,45,48,47], p:[41,45,48,52], m:[72,0,71,69]},  // F     F→A→C→B
+      {b:[48,52,55,57], p:[48,52,55],    m:[67,69,72,0]},  // C     C→E→G→A
+      {b:[43,47,50,48], p:[43,47,50],    m:[71,0,69,67]},  // G     G→B→D→C
+      {b:[45,52,48,50], p:[45,48,52],    m:[72,74,76,0]},  // Am(↑) A→E→C→D
+      {b:[36,40,43,45], p:[36,40,43,48], m:[64,65,67,69]}, // Dm    D→F→A→C
+      {b:[41,45,48,47], p:[41,45,48,52], m:[69,71,72,0]},  // F     F→A→C→B
+      {b:[40,44,47,45], p:[40,44,47,52], m:[76,74,72,71]}, // E7    E→G#→B→A
+    ]},
+    { bpm:96, chords:[ // C — Triumph, most energetic
+      {b:[41,45,48,50], p:[41,45,48,52], m:[72,74,76,0]},  // F     F→A→C→D
+      {b:[43,47,50,52], p:[43,47,50,55], m:[0,74,72,71]},  // G     G→B→D→E
+      {b:[45,48,52,54], p:[45,48,52,55], m:[72,0,71,69]},  // Am    A→C→E→F#
+      {b:[40,44,47,48], p:[40,44,47,52], m:[0,67,69,71]},  // E     E→G#→B→C
+      {b:[41,48,45,43], p:[41,45,48],    m:[72,76,79,0]},  // F(↑)  F→C→A→G
+      {b:[43,50,47,45], p:[43,47,50],    m:[0,76,74,72]},  // G     G→D→B→A
+      {b:[48,52,55,59], p:[48,52,55,59], m:[72,71,69,67]}, // Cmaj7 C→E→G→B
+      {b:[43,47,50,48], p:[43,47,50,55], m:[65,67,69,72]}, // Gsus  G→B→D→C
+    ]}
   ];
-  const ND=0.38;
-  function mkNote(f,st,dur,vol=0.07){
-    if(!ctx)return;
-    const o=ctx.createOscillator(),g=ctx.createGain();
-    o.type='sine'; o.frequency.value=f;
-    g.gain.setValueAtTime(0.001,st);
-    g.gain.linearRampToValueAtTime(vol,st+0.04);
-    g.gain.exponentialRampToValueAtTime(0.001,st+dur*0.88);
-    o.connect(g); g.connect(ctx.destination);
-    o.start(st); o.stop(st+dur);
-    nodes.push(o);
+
+  function initCtx(){
+    if(!ctx){
+      ctx=new(window.AudioContext||window.webkitAudioContext)();
+      mGain=ctx.createGain();
+      mGain.gain.value=bgmEnabled?bgmVolume:0;
+      mGain.connect(ctx.destination);
+      sfxGain=ctx.createGain();
+      sfxGain.connect(ctx.destination);
+    }
+    if(ctx.state==='suspended')ctx.resume();
+    return ctx;
   }
-  function playLoop(){
-    if(!playing||!ctx)return;
-    const mel=TRACKS[trackIdx%TRACKS.length];
-    const now=ctx.currentTime+0.1;
-    mel.forEach((f,i)=>mkNote(f,now+i*ND,ND*0.85));
-    // Bass notes every 4 beats
-    mel.filter((_,i)=>i%4===0).forEach((f,i)=>{
-      mkNote(f/2,now+i*ND*4,ND*3,0.04);
-    });
-    const total=mel.length*ND+0.6;
-    loopTO=setTimeout(()=>{if(playing){trackIdx++;playLoop();}},total*1000);
+
+  function playBass(midi,t,dur,vScale){
+    // Walking bass guitar: sawtooth body + sub sine depth
+    try{
+      const c=initCtx(),freq=hz(midi-12);
+      // Sawtooth body (bass guitar tone)
+      const oS=c.createOscillator(),shp=c.createWaveShaper(),flt=c.createBiquadFilter(),gS=c.createGain();
+      oS.type='sawtooth';oS.frequency.value=freq;
+      shp.curve=BDIST;
+      flt.type='lowpass';flt.frequency.value=490;flt.Q.value=2.2;
+      gS.gain.setValueAtTime(.001,t);
+      gS.gain.linearRampToValueAtTime(.3*vScale,t+.016);   // Fast pluck attack
+      gS.gain.exponentialRampToValueAtTime(.13*vScale,t+dur*.5);
+      gS.gain.exponentialRampToValueAtTime(.001,t+dur);
+      oS.connect(shp);shp.connect(flt);flt.connect(gS);gS.connect(mGain);
+      oS.start(t);oS.stop(t+dur+.05);
+      // Sub sine (depth)
+      const oB=c.createOscillator(),gB=c.createGain();
+      oB.type='sine';oB.frequency.value=freq*.5;
+      gB.gain.setValueAtTime(.001,t);
+      gB.gain.linearRampToValueAtTime(.22*vScale,t+.025);
+      gB.gain.exponentialRampToValueAtTime(.001,t+dur*.82);
+      oB.connect(gB);gB.connect(mGain);
+      oB.start(t);oB.stop(t+dur+.05);
+    }catch(e){}
   }
+
+  function playKick(t){
+    // Pitched sine thump on strong beats — rhythmic foundation
+    try{
+      const c=initCtx(),o=c.createOscillator(),g=c.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(85,t);
+      o.frequency.exponentialRampToValueAtTime(33,t+.14);
+      g.gain.setValueAtTime(.001,t);
+      g.gain.linearRampToValueAtTime(.38,t+.007);
+      g.gain.exponentialRampToValueAtTime(.001,t+.24);
+      o.connect(g);g.connect(mGain);
+      o.start(t);o.stop(t+.3);
+    }catch(e){}
+  }
+
+  function playPad(midi,t,dur){
+    // Soft strings pad (3-voice chorus, very low volume)
+    try{
+      const c=initCtx();
+      [-5,0,5].forEach(det=>{
+        const o=c.createOscillator(),flt=c.createBiquadFilter(),g=c.createGain();
+        o.type='sawtooth';o.frequency.value=hz(midi);o.detune.value=det;
+        flt.type='lowpass';flt.frequency.value=1400;
+        g.gain.setValueAtTime(.001,t);
+        g.gain.linearRampToValueAtTime(.026,t+.42);
+        g.gain.setValueAtTime(.026,Math.max(t+.42,t+dur-.55));
+        g.gain.linearRampToValueAtTime(.001,t+dur);
+        o.connect(flt);flt.connect(g);g.connect(mGain);
+        o.start(t);o.stop(t+dur+.1);
+      });
+    }catch(e){}
+  }
+
+  function playMel(midi,t,dur){
+    if(!midi)return;
+    try{
+      const c=initCtx(),freq=hz(midi);
+      const o=c.createOscillator(),lfo=c.createOscillator(),lfog=c.createGain(),g=c.createGain();
+      o.type='triangle';o.frequency.value=freq;
+      lfo.type='sine';lfo.frequency.value=5.1;
+      lfog.gain.value=freq*.011; // vibrato
+      lfo.connect(lfog);lfog.connect(o.frequency);
+      const tv=t+(Math.random()-.5)*.022; // timing humanize
+      const vol=.052*(0.85+Math.random()*.3);
+      g.gain.setValueAtTime(.001,tv);
+      g.gain.linearRampToValueAtTime(vol,tv+.07);
+      g.gain.setValueAtTime(vol,Math.max(tv+.07,tv+dur-.2));
+      g.gain.linearRampToValueAtTime(.001,tv+dur);
+      o.connect(g);g.connect(mGain);
+      lfo.start(tv);lfo.stop(tv+dur+.1);
+      o.start(tv);o.stop(tv+dur+.1);
+    }catch(e){}
+  }
+
+  function duckMaster(){
+    if(!mGain||!bgmEnabled)return;
+    try{
+      const base=bgmVolume;
+      mGain.gain.cancelScheduledValues(ctx.currentTime);
+      mGain.gain.setValueAtTime(base*.18,ctx.currentTime);
+      mGain.gain.linearRampToValueAtTime(base,ctx.currentTime+.72);
+    }catch(e){}
+  }
+
+  function tick(){
+    if(!active)return;
+    const c=initCtx();
+    while(nextTime<c.currentTime+.45){
+      const sec=SECS[secI];
+      const bpm=sceneId==='game'?Math.min(Math.round(sec.bpm*1.13),106):sec.bpm;
+      const bd=60/bpm;
+      const bib=beat%4;                                 // beat-in-bar 0-3
+      const chord=sec.chords[Math.floor(beat/4)%sec.chords.length];
+      const t=nextTime;
+
+      // === BASS: walking line (main driver, loudest) ===
+      const vScale=bib===0?1.0:bib===2?.86:.72;        // accent beat 1, mild 3, soft 2&4
+      playBass(chord.b[bib],t,bd*(bib%2===0?.87:.7),vScale);
+
+      // === KICK: rhythmic pulse on 1 and 3 ===
+      if(bib===0||bib===2)playKick(t);
+
+      // === PAD: chord swell on beat 1 only ===
+      if(bib===0){
+        chord.p.forEach((n,i)=>playPad(n,t+i*.04,bd*3.8));
+      }
+
+      // === MELODY: sparse triangle+vibrato, ~78% chance ===
+      const mNote=chord.m[bib];
+      if(mNote&&Math.random()>.22){
+        playMel(mNote,t,bd*(bib===3?1.3:.65+Math.random()*.4));
+      }
+
+      nextTime+=bd;
+      beat++;
+      // Switch section after 2 full chord-progression cycles
+      if(beat%(sec.chords.length*4*2)===0){
+        beat=0;
+        secI=(secI+1)%SECS.length;
+      }
+    }
+    schedRef=setTimeout(tick,55);
+  }
+
+  function mkSfxNote(f,dur,vol,type='sine'){
+    if(!sfxEnabled||sfxVolume<=0)return;
+    try{
+      const c=initCtx();
+      if(c.state==='suspended')c.resume();
+      const now=c.currentTime,o=c.createOscillator(),g=c.createGain();
+      o.type=type;o.frequency.value=f;
+      g.gain.setValueAtTime(Math.max(.001,vol*sfxVolume),now);
+      g.gain.exponentialRampToValueAtTime(.001,now+dur);
+      o.connect(g);g.connect(sfxGain);o.start(now);o.stop(now+dur);
+    }catch(e){}
+  }
+
   return{
-    init(){
-      if(ctx){if(ctx.state==='suspended')ctx.resume();return true;}
-      try{ctx=new(window.AudioContext||window.webkitAudioContext)();return true;}
-      catch(e){return false;}
+    start(){
+      if(active)return;
+      active=true;
+      const c=initCtx();
+      nextTime=c.currentTime+.25;
+      beat=0;secI=0;
+      tick();
+      setAudioStatus('재생 중');
     },
-    start(){if(!this.init()||playing)return;playing=true;playLoop();},
-    stop(){playing=false;clearTimeout(loopTO);nodes.forEach(n=>{try{n.stop(0);}catch(e){}});nodes=[];},
-    toggle(){if(playing){this.stop();return false;}this.start();return true;},
-    isPlaying(){return playing;},
+    stop(){
+      active=false;
+      if(schedRef){clearTimeout(schedRef);schedRef=null;}
+    },
+    setScene(s){
+      sceneId=s==='home'?'home':'game';
+      if(!active&&bgmEnabled)this.start();
+    },
+    setVolume(){if(mGain)mGain.gain.value=bgmEnabled?bgmVolume:0;},
+    isPlaying(){return active;},
     sfx(t){
-      if(!ctx)return;
-      const now=ctx.currentTime;
-      if(t==='ok')[523,659,784].forEach((f,i)=>mkNote(f,now+i*0.1,0.18,0.14));
-      else if(t==='no')[440,330].forEach((f,i)=>mkNote(f,now+i*0.12,0.16,0.1));
-      else if(t==='tick')mkNote(1200,now,0.05,0.06);
+      duckMaster();
+      if(t==='ok'){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>mkSfxNote(f,.28,.28,'triangle'),i*85));setTimeout(()=>mkSfxNote(1568,.36,.18,'sine'),240);}
+      else if(t==='no'){[220,165,110].forEach((f,i)=>setTimeout(()=>mkSfxNote(f,.35,.34,'sawtooth'),i*120));setTimeout(()=>mkSfxNote(70,.5,.26,'square'),260);}
+      else if(t==='tick')mkSfxNote(1200,.06,.08,'square');
     }
   };
 })();
 
-function toggleSnd(){
-  const on=BGM.toggle();
-  document.getElementById('sndbtn').textContent=on?'🔊':'🔇';
+function setSndButton(){
+  const b=document.getElementById('sndbtn');
+  if(!b)return;
+  const on=bgmEnabled&&BGM.isPlaying();
+  b.className='sndbtn'+(on?' on':'');
+  b.innerHTML=on?ICONS.music:ICONS.musicOff;
+  b.title=t('audio_settings');
+  b.setAttribute('aria-label',t('audio_settings'));
+  const closeBtn=document.getElementById('audio-close-btn');
+  if(closeBtn)closeBtn.setAttribute('aria-label',t('close'));
+  const panelTitle=document.getElementById('audio-panel-title');
+  if(panelTitle)panelTitle.textContent=t('audio_settings');
+  const homeBtn=document.getElementById('go-home-btn');
+  if(homeBtn)homeBtn.title=t('go_home');
+  b.dataset.icon='1';
+  const home=document.getElementById('home-audio-btn');
+  if(home){home.textContent=bgmEnabled?'BGM ON':'BGM OFF';home.className='home-audio-btn'+(bgmEnabled?' on':'');}
+}
+function toggleAudioPanel(force){
+  const panel=document.getElementById('audio-panel');
+  panel.classList.toggle('on',typeof force==='boolean'?force:!panel.classList.contains('on'));
+  updateAudioControls();
+}
+function toggleBgm(){
+  bgmEnabled=!bgmEnabled;
+  if(bgmEnabled)BGM.start();else BGM.stop();
+  saveAudioSettings();updateAudioControls();
+}
+function toggleSfx(){sfxEnabled=!sfxEnabled;saveAudioSettings();updateAudioControls();if(sfxEnabled)BGM.sfx('ok');}
+function setBgmVolume(v){bgmVolume=Number(v)/100;BGM.setVolume();saveAudioSettings();updateAudioControls();}
+function setSfxVolume(v){sfxVolume=Number(v)/100;saveAudioSettings();updateAudioControls();}
+function saveAudioSettings(){
+  try{localStorage.setItem('wq_audio',JSON.stringify({bgmEnabled,sfxEnabled,bgmVolume,sfxVolume}));}catch(e){}
+}
+function setAudioStatus(status){
+  const track=document.getElementById('audio-track');
+  if(track){track.dataset.status=status;updateAudioTrack();}
+}
+function updateAudioTrack(){
+  const track=document.getElementById('audio-track');
+  if(!track)return;
+  const name=document.getElementById('s-home').classList.contains('on')?'홈 음악 · World Journey':'게임 음악 · Quiz Adventure';
+  track.textContent=name+(track.dataset.status?' · '+track.dataset.status:'');
+}
+function updateAudioControls(){
+  const bgm=document.getElementById('bgm-toggle'),sfx=document.getElementById('sfx-toggle');
+  const bv=document.getElementById('bgm-volume'),sv=document.getElementById('sfx-volume');
+  if(bgm){bgm.textContent=bgmEnabled?'ON':'OFF';bgm.className='audio-toggle'+(bgmEnabled?' on':'');}
+  if(sfx){sfx.textContent=sfxEnabled?'ON':'OFF';sfx.className='audio-toggle'+(sfxEnabled?' on':'');}
+  if(bv)bv.value=Math.round(bgmVolume*100);if(sv)sv.value=Math.round(sfxVolume*100);
+  updateAudioTrack();
+  setSndButton();
+}
+function initBgm(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('wq_audio')||'null');
+    if(saved){bgmEnabled=saved.bgmEnabled!==false;sfxEnabled=saved.sfxEnabled!==false;bgmVolume=Number(saved.bgmVolume??.35);sfxVolume=Number(saved.sfxVolume??.7);}
+  }catch(e){}
+  BGM.setVolume();updateAudioControls();
 }
 
 // ============================================================
 // VOICE READ-ALOUD (Web Speech API)
 // ============================================================
 function langVoice(){return lang==='zh'?'zh-CN':(lang==='en'?'en-US':'ko-KR');}
-function questionText(q){return q.type==='flag'?t('flag_in'):t('land_in');}
+function questionText(q){return q.type==='flag'?t('flag_in'):q.type==='cap'?t('cap_in'):t('land_in');}
 function toggleVoice(){
   voiceOn=!voiceOn;
   try{localStorage.setItem('wq_voice',voiceOn?'1':'0');}catch(e){}
@@ -625,48 +2101,55 @@ function setLang(l){
   lang=l;
   document.getElementById('lb-ko').className='lbtn'+(l==='ko'?' on':'');
   document.getElementById('lb-en').className='lbtn'+(l==='en'?' on':'');
-  document.getElementById('lb-zh').className='lbtn'+(l==='zh'?' on':'');
-  renderHome();
-}
-function setDiff(d){
-  difficulty=d;
-  ['easy','normal','hard'].forEach(x=>{document.getElementById('df-'+x).className='dbtn'+(x===d?' on':'');});
+  const zhBtn=document.getElementById('lb-zh');
+  if(zhBtn)zhBtn.className='lbtn'+(l==='zh'?' on':'');
   renderHome();
 }
 function setQT(qt){
   qtype=qt;
   document.getElementById('qt-f').className='qtab-btn'+(qt==='flag'?' on':'');
+  document.getElementById('qt-cap').className='qtab-btn'+(qt==='cap'?' on':'');
   document.getElementById('qt-l').className='qtab-btn'+(qt==='land'?' on':'');
   renderHome();
+  ldBests();
 }
 
 function renderHome(){
   document.getElementById('h-title').textContent=t('title');
   document.getElementById('h-sub').textContent=t('sub');
-  document.getElementById('h-pill1').textContent=t('pill1');
-  document.getElementById('h-pill2').textContent=t('pill2');
-  document.getElementById('h-pill3').textContent=t('pill3');
   document.getElementById('qt-f-t').textContent=t('qt_flag');
+  document.getElementById('qt-cap-t').textContent=t('qt_cap');
   document.getElementById('qt-l-t').textContent=t('qt_land');
-  document.getElementById('df-easy-t').textContent=t('diff_easy');
-  document.getElementById('df-normal-t').textContent=t('diff_normal');
-  document.getElementById('df-hard-t').textContent=t('diff_hard');
+  document.getElementById('h-qt-label').textContent=t('quiz_type');
   document.getElementById('h-nl').textContent=t('nick');
   document.getElementById('hn').placeholder=t('nick_ph');
+  document.getElementById('h-nh').textContent=t('nick_hint');
   document.getElementById('h-ml').textContent=t('mode');
+  const ui=UI_TEXT[lang]||UI_TEXT.ko;
+  document.getElementById('step1-help').textContent=ui.step1;
+  document.getElementById('step2-help').textContent=ui.step2;
+  document.getElementById('qt-f').dataset.selectedLabel=ui.selected;
+  document.getElementById('qt-cap').dataset.selectedLabel=ui.selected;
+  document.getElementById('qt-l').dataset.selectedLabel=ui.selected;
+  const capLabelEl=document.getElementById('cap-ask-label-el');
+  if(capLabelEl)capLabelEl.textContent=lang==='en'?'Capital':lang==='zh'?'首都':'수도';
+  const status=document.getElementById('selection-status');
+  if(status)status.textContent=ui.current+t(qtype==='flag'?'qt_flag':qtype==='cap'?'qt_cap':'qt_land');
   document.getElementById('ms-t').textContent=t('surv');
   document.getElementById('ms-d').textContent=t('surv_d').replace('\\n','\n');
   document.getElementById('mc-t').textContent=t('chal');
   document.getElementById('mc-d').textContent=(qtype==='flag'?t('chal_df'):t('chal_dl')).replace('\\n','\n');
   document.getElementById('mc-b').textContent=qtype==='flag'?t('chal_bf'):t('chal_bl');
+  const recordUnit=scoreWord();
+  document.getElementById('ms-r').textContent=t('best_surv')+': '+(bS||0)+recordUnit;
+  document.getElementById('mc-r').textContent=t('best_chal')+': '+(bC||0)+recordUnit;
+  document.getElementById('md-r').textContent=t('best_daily')+': '+(bD||0)+recordUnit;
   document.getElementById('md-t').textContent=t('daily');
   document.getElementById('md-d').innerHTML=t('daily_d').replace(/\\n/g,'<br>');
   const mdBadge=document.getElementById('md-b');
   const done=sGet('wq_daily_done_'+todayKey()+'_'+difficulty,false)==='1';
   mdBadge.textContent=done?t('daily_done'):t('daily_b');
   mdBadge.className='daily-tag'+(done?' daily-done':'');
-  document.getElementById('h-tip').textContent=t('tip')+' · '+t('time_'+difficulty);
-  document.getElementById('h-lb').textContent=t('lb_btn');
   document.getElementById('h-top').textContent=t('top3');
   // LB tabs
   document.getElementById('lts').textContent=t('surv_t');
@@ -687,6 +2170,11 @@ function renderHome(){
   document.getElementById('rnew').textContent=t('new_r');
   document.getElementById('rwrtry').textContent=t('wrong_retry');
   initVoice();
+  initBgm();
+  initGlobe3D();
+  initQuizPreview();
+  applyPictureIcons();
+  ldStreak();
 }
 
 // ============================================================
@@ -699,8 +2187,8 @@ function shSeed(a,seed){let b=[...a],rnd=seeded(seed);for(let i=b.length-1;i>0;i
 function gameTotal(){return (mode==='daily'||mode==='review')?qs.length:challengeTotal();}
 function autoNick(){return t('guest')+Math.floor(10+Math.random()*90);}
 
-function goS(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
-function gohome(){stpT();stpAuto();document.onkeydown=null;renderHome();goS('s-home');}
+function goS(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);BGM.setScene(id==='s-home'?'home':'game');updateAudioControls();}
+function gohome(){gameActive=false;stpT();stpAuto();document.onkeydown=null;renderHome();goS('s-home');}
 function fmt(s){return Math.floor(s/60)+t('min')+' '+String(s%60).padStart(2,'0')+t('sec');}
 
 function chk(){
@@ -718,11 +2206,13 @@ function stpT(){clearInterval(ti);ti=null;}
 function stpAuto(){clearTimeout(autoNextTimer);autoNextTimer=null;}
 
 function strT(){
-  stpT(); tl=maxTime(); updT();
+  stpT();
+  if(!(mode==='challenge'&&qi>0&&tl>0))tl=maxTime();
+  updT();
   ti=setInterval(()=>{
     tl--;
     updT();
-    if(tl<=0){stpT();onTO();}
+    if(tl<=0){stpT();if(mode==='challenge')endG();else onTO();}
     else if(tl<=3)BGM.sfx('tick');
   },1000);
 }
@@ -744,7 +2234,7 @@ function updT(){
 // PREP QUESTIONS
 // ============================================================
 function prep(m){
-  // Flag quiz: difficulty controls the country pool. Easy keeps the first play friendly.
+  // Flag quiz uses the full country pool.
   const base=activeCountries();
   const pool=m==='challenge'?sh(base).slice(0,challengeTotal()):sh([...base]);
   return pool.map(c=>{
@@ -758,18 +2248,19 @@ function prep(m){
 }
 
 function prepLand(m){
-  // Landmark quiz: same difficulty idea, but filtered by countries with landmarks.
+  // Landmark quiz uses famous real-photo targets.
   const ac=new Set(activeCodes());
-  let base=LM.filter(l=>ac.has(l.c));
-  if(base.length<4)base=[...LM];
+  let base=LANDMARK_POOL.filter(l=>ac.has(l.c));
+  if(base.length<4)base=[...LANDMARK_POOL];
   const pool=m==='challenge'?sh([...base]).slice(0,challengeTotal()):sh([...base]);
   return pool.map(lm=>{
     const country=C.find(c=>c[0]===lm.c);
     const region=country?country[2]:'Asia';
     let wrongLM=base.filter(l=>l.c!==lm.c&&C.find(c=>c[0]===l.c&&c[2]===region));
     if(wrongLM.length<3)wrongLM=[...wrongLM,...base.filter(l=>l.c!==lm.c&&!wrongLM.includes(l))];
-    if(wrongLM.length<3)wrongLM=[...wrongLM,...LM.filter(l=>l.c!==lm.c&&!wrongLM.includes(l))];
-    const wrongs=sh(wrongLM).slice(0,3).map(l=>l.c);
+    if(wrongLM.length<3)wrongLM=[...wrongLM,...LANDMARK_POOL.filter(l=>l.c!==lm.c&&!wrongLM.includes(l))];
+    const seen=new Set([lm.c]);
+    const wrongs=sh(wrongLM).filter(l=>{if(seen.has(l.c))return false;seen.add(l.c);return true;}).slice(0,3).map(l=>l.c);
     const opts=sh([lm.c,...wrongs]);
     return{type:'land',lm,code:lm.c,name:country?country[1]:'',reg:region,opts,cor:opts.indexOf(lm.c)};
   });
@@ -795,23 +2286,41 @@ function startG(m){
   let v=document.getElementById('hn').value.trim();
   if(!v){v=autoNick();document.getElementById('hn').value=v;chk();}
   nick=v; mode=m;
-  qs=m==='daily'?prepDaily():(qtype==='flag'?prep(m):prepLand(m));
-  qi=0; sc=0; lv=3; as=[]; ch=null; wop=false; t0=Date.now();
+  qs=m==='daily'?prepDaily():(qtype==='flag'?prep(m):qtype==='cap'?prepCap(m):prepLand(m));
+  qi=0; sc=0; lv=3; as=[]; ch=null; wop=false; t0=Date.now(); comboCount=0;
   let label='';
   if(m==='survival')label=t('surv_t');
   else if(m==='daily')label=t('daily_b');
   else label=qtype==='flag'?t('chal_bf'):t('chal_bl');
-  document.getElementById('gb').textContent=label+' · '+t('diff_'+difficulty);
+  document.getElementById('gb').textContent=label;
   const gl=document.getElementById('gl'),gp=document.getElementById('gpw');
   if(m==='survival'){gl.style.display='flex';gp.style.display='none';updL();}
   else{gl.style.display='none';gp.style.display='block';}
-  goS('s-game'); rnQ(); document.onkeydown=kbH;
-  if(!BGM.isPlaying()){BGM.start();document.getElementById('sndbtn').textContent='🔊';}
+  gameActive=true; goS('s-game'); rnQ(); document.onkeydown=kbH;
+  if(bgmEnabled&&!BGM.isPlaying())BGM.start();
+  setSndButton();
 }
 function startDaily(){startG('daily');}
 
 function updL(){
-  document.getElementById('gl').innerHTML=[...Array(3)].map((_,i)=>`<span class="ht${i>=lv?' lost':''}">❤️</span>`).join('');
+  const globe=`<svg viewBox="0 0 64 64" aria-hidden="true">
+    <defs>
+      <radialGradient id="lifeOcean" cx=".34" cy=".24" r=".8">
+        <stop stop-color="#7dd3fc"/>
+        <stop offset=".55" stop-color="#2563eb"/>
+        <stop offset="1" stop-color="#0f172a"/>
+      </radialGradient>
+      <linearGradient id="lifeLand" x1="0" x2="1" y1="0" y2="1">
+        <stop stop-color="#bbf7d0"/>
+        <stop offset="1" stop-color="#16a34a"/>
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="26" fill="url(#lifeOcean)" stroke="#bae6fd" stroke-width="3"/>
+    <path d="M16 27c5-9 18-13 29-7-4 5-12 4-16 9-3 4-8 3-13-2z" fill="url(#lifeLand)"/>
+    <path d="M36 38c7-4 14 1 12 8-6 5-15 6-23 3 5-3 5-8 11-11z" fill="#86efac"/>
+    <path d="M32 7c7 9 7 41 0 50M7 32h50" fill="none" stroke="#dbeafe" stroke-width="2" opacity=".55"/>
+  </svg>`;
+  document.getElementById('gl').innerHTML=[...Array(3)].map((_,i)=>`<span class="ht${i>=lv?' lost':''}">${globe}</span>`).join('');
 }
 
 // ============================================================
@@ -834,17 +2343,38 @@ function rnQ(){
     document.getElementById('gpt').textContent=(qi+1)+' / '+total;
   }
 
-  if(q.type==='flag'){
-    document.getElementById('qtitle').textContent=t('flag_in');
+  if(q.type==='cap'){
+    document.getElementById('qtitle').textContent=t('cap_in');
     document.getElementById('q-flag').style.display='block';
+    document.getElementById('q-cap').style.display='none';
     document.getElementById('q-land').style.display='none';
     const fl=document.getElementById('gfl');
-    fl.className='fi fi-'+q.code;
-    fl.style.cssText='display:block;width:200px;height:133px;margin:0 auto;border-radius:5px;border:1px solid #475569;background-size:cover;background-position:center';
-    document.getElementById('grg').textContent=tr(q.reg)+' · '+t('time_'+difficulty);
+    const flFallback=document.getElementById('gfl-fallback');
+    fl.className='flag-img';
+    fl.alt=cname(q.code)+' flag';
+    fl.style.display='block';
+    flFallback.style.display='none';
+    fl.onerror=()=>{fl.style.display='none';flFallback.style.display='flex';flFallback.textContent=q.code;};
+    fl.src='https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/'+q.code+'.svg';
+    document.getElementById('grg').textContent=cname(q.code);
+  } else if(q.type==='flag'){
+    document.getElementById('qtitle').textContent=t('flag_in');
+    document.getElementById('q-flag').style.display='block';
+    document.getElementById('q-cap').style.display='none';
+    document.getElementById('q-land').style.display='none';
+    const fl=document.getElementById('gfl');
+    const flFallback=document.getElementById('gfl-fallback');
+    fl.className='flag-img';
+    fl.alt=cname(q.code)+' flag';
+    fl.style.display='block';
+    flFallback.style.display='none';
+    fl.onerror=()=>{fl.style.display='none';flFallback.style.display='flex';flFallback.textContent=q.code;};
+    fl.src='https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/'+q.code+'.svg';
+    document.getElementById('grg').textContent=tr(q.reg);
   } else {
     document.getElementById('qtitle').textContent=t('land_in');
     document.getElementById('q-flag').style.display='none';
+    document.getElementById('q-cap').style.display='none';
     document.getElementById('q-land').style.display='block';
     const img=document.getElementById('gimg');
     const fb=document.getElementById('glm-fb');
@@ -852,10 +2382,10 @@ function rnQ(){
     loadLandmarkImage(img,q.lm);
     const lmLabel=lmName(q.lm);
     const cityName=lmCity(q.lm);
-    // V4.6: show landmark/name only. Do not show city/region hints before the answer.
+    // Show landmark/name only. Do not show city/region hints before the answer.
     document.getElementById('glm-badge').textContent=lmLabel;
     document.getElementById('glm-name').textContent=lmLabel;
-    document.getElementById('grg').textContent=t('time_'+difficulty);
+    document.getElementById('grg').textContent='';
     preloadLandmarkImage(qs[qi+1]);
   }
 
@@ -871,8 +2401,8 @@ function showOpts(q,correctIdx,chosenIdx,revealed){
   const w=document.getElementById('gopts');
   w.innerHTML='';
   q.opts.forEach((c,i)=>{
-    const code=q.type==='flag'?c[0]:c;
-    const name=q.type==='flag'?cname(c[0]):cname(c);
+    const code=q.type==='land'?c:c[0];
+    const name=q.type==='cap'?(lang==='en'?CAP_EN[c[0]]:CAP[c[0]]):(q.type==='land'?cname(c):cname(c[0]));
     const btn=document.createElement('button');
     btn.className='ob';
     if(revealed&&correctIdx>=0){
@@ -905,9 +2435,12 @@ function pick(i){
   stpT(); ch=i;
   const q=qs[qi];
   const ok=i===q.cor;
-  const bonus=ok&&tl>Math.ceil(maxTime()*0.7);
-  const gained=ok?10+(bonus?5:0):0;
-  if(ok){sc+=gained;shFl(gained);BGM.sfx('ok');}
+  if(ok) comboCount++; else comboCount=0;
+  const bonus=ok&&mode!=='challenge'&&tl>Math.ceil(maxTime()*0.7);
+  const comboBonus=ok&&comboCount>=3?Math.min((comboCount-2)*2,10):0;
+  const gained=ok?10+(bonus?5:0)+comboBonus:0;
+  answerEffect(ok);
+  if(ok){sc+=gained;shFl(gained);BGM.sfx('ok');if(comboCount>=3)showCombo(comboCount);}
   else{if(mode==='challenge')sc=Math.max(0,sc-2);BGM.sfx('no');}
   as.push({q,ch:i,ok,score:gained});
   showOpts(q,q.cor,i,true);
@@ -918,15 +2451,62 @@ function pick(i){
 function shFl(pts){
   const el=document.createElement('div');
   el.className='fl';
-  el.style.color=pts>10?'#fbbf24':'#4ade80';
-  el.textContent='+'+pts+scoreWord()+(pts>10?' ⚡':'');
+  el.style.color=pts>15?'#a78bfa':pts>10?'#fbbf24':'#4ade80';
+  el.textContent='+'+pts+scoreWord()+(pts>15?' 🔥':pts>10?' ⚡':'');
   document.getElementById('gw').appendChild(el);
   setTimeout(()=>el.remove(),1300);
 }
 
+function showCombo(n){
+  let el=document.getElementById('combo-badge');
+  if(!el)return;
+  clearTimeout(el._t);
+  el.className='';
+  void el.offsetWidth;
+  if(n>=10){el.textContent='🔥 '+n+' COMBO!!';el.className='combo-wow show';}
+  else if(n>=5){el.textContent='⚡ '+n+' COMBO!';el.className='combo-ok show';}
+  else{el.textContent='🎯 '+n+' COMBO';el.className='combo-ok show';}
+  el._t=setTimeout(()=>{el.className='';},1600);
+}
+
+function answerEffect(ok){
+  const gw=document.getElementById('gw');
+  if(!gw)return;
+  const flash=document.createElement('div');
+  flash.className='screen-flash '+(ok?'ok':'no');
+  document.body.appendChild(flash);
+  setTimeout(()=>flash.remove(),800);
+
+  const pop=document.createElement('div');
+  pop.className='answer-pop '+(ok?'ok':'no');
+  pop.textContent=ok?(lang==='en'?'Correct!':lang==='zh'?'正确!':'정답!'):(lang==='en'?'Wrong!':lang==='zh'?'错误!':'오답!');
+  document.body.appendChild(pop);
+  setTimeout(()=>pop.remove(),1100);
+
+  if(ok){
+    for(let i=0;i<8;i++){
+      const star=document.createElement('div');
+      star.className='burst-star';
+      star.textContent='✦';
+      const angle=(Math.PI*2/8)*i;
+      const dist=42+Math.random()*28;
+      star.style.marginLeft=Math.cos(angle)*dist+'px';
+      star.style.marginTop=Math.sin(angle)*dist+'px';
+      document.body.appendChild(star);
+      setTimeout(()=>star.remove(),950);
+    }
+  }else{
+    gw.classList.remove('wrong-shake');
+    void gw.offsetWidth;
+    gw.classList.add('wrong-shake');
+    setTimeout(()=>gw.classList.remove('wrong-shake'),500);
+  }
+}
+
 function shFB(ok,isTO,q,bonus){
   const fb=document.getElementById('gfb'),fm=document.getElementById('gfm'),fs=document.getElementById('gfs');
-  const qname=q.type==='flag'?cname(q.code):lmName(q.lm);
+  const capCityName=q.type==='cap'?(lang==='en'?CAP_EN[q.code]:q.cap):'';
+  const qname=q.type==='flag'?cname(q.code):q.type==='cap'?(cname(q.code)+' → '+capCityName):lmName(q.lm);
   const country=q.type==='flag'?qname:cname(q.code);
   fm.style.color=ok?'#4ade80':isTO?'#fca5a5':'#f87171';
   if(ok) fm.textContent=bonus?t('ans_ob'):t('ans_ok');
@@ -942,7 +2522,7 @@ function shFB(ok,isTO,q,bonus){
   const nb=document.getElementById('gnx');
   nb.style.display='block';
   const total=gameTotal();
-  const hasNext=(mode==='survival'&&lv>0)||((mode==='challenge'||mode==='daily'||mode==='review')&&qi+1<total);
+  const hasNext=(mode==='survival'&&lv>0)||((mode==='challenge'||mode==='daily'||mode==='review')&&qi+1<total&&(mode!=='challenge'||tl>0));
   nb.textContent=hasNext?t('auto_move'):t('res');
   const delay=ok?1100:1800;
   stpAuto();
@@ -953,9 +2533,12 @@ function shFB(ok,isTO,q,bonus){
 }
 
 function onTO(){
+  if(!gameActive)return;
   if(ch!==null)return;ch=-1;
   const q=qs[qi];
   as.push({q,ch:-1,ok:false,score:0});
+  answerEffect(false);
+  BGM.sfx('no');
   if(mode==='survival'){lv--;updL();}
   document.getElementById('gto').textContent=t('timeout');
   document.getElementById('gto').style.display='block';
@@ -968,12 +2551,21 @@ function nxt(){
   stpAuto();
   const total=gameTotal();
   if(mode==='survival'&&lv<=0){endG();return;}
+  if(mode==='challenge'&&tl<=0){endG();return;}
   if((mode==='challenge'||mode==='daily'||mode==='review')&&qi+1>=total){endG();return;}
   qi++;
-  if(mode==='survival'&&qi>=qs.length)qs=[...qs,...(qtype==='flag'?prep('survival'):prepLand('survival'))];
+  if(mode==='survival'&&qi>=qs.length)qs=[...qs,...(qtype==='flag'?prep('survival'):qtype==='cap'?prepCap('survival'):prepLand('survival'))];
   rnQ();
 }
 
+function goHome(){
+  gameActive=false;
+  stpT(); stpAuto();
+  if(window.speechSynthesis)try{window.speechSynthesis.cancel();}catch(e){}
+  document.onkeydown=null;
+  goS('s-home');
+  renderHome();
+}
 function kbH(e){
   if(!document.getElementById('s-game').classList.contains('on'))return;
   if(['1','2','3','4'].includes(e.key)&&ch===null)pick(parseInt(e.key)-1);
@@ -984,23 +2576,31 @@ function kbH(e){
 // END / RESULTS
 // ============================================================
 function endG(){
+  if(!gameActive)return;
+  gameActive=false;
   stpT(); document.onkeydown=null;
   if(window.speechSynthesis)try{window.speechSynthesis.cancel();}catch(e){}
   const el=Math.round((Date.now()-t0)/1000);
   const cor=as.filter(a=>a.ok).length,tot=as.length;
   const pct=tot?Math.round((cor/tot)*100):0;
   const g=grd(pct),gi=GI[g];
-  const isN=mode==='survival'?sc>bS:(mode==='challenge'?sc>bC:false);
+  const modeName=mode==='survival'?t('surv'):(mode==='daily'?t('daily'):(mode==='review'?t('wrong_retry'):t('chal')));
+  const qtName=qtype==='flag'?t('qt_flag'):qtype==='cap'?t('qt_cap'):t('qt_land');
+  const isN=mode==='survival'?sc>bS:(mode==='challenge'?sc>bC:(mode==='daily'?sc>bD:false));
   if(mode==='survival'&&sc>bS)bS=sc;
   if(mode==='challenge'&&sc>bC)bC=sc;
+  if(mode==='daily'&&sc>bD)bD=sc;
   svBest(); if(mode!=='review')svLB(cor,tot,el,g);
   if(mode==='daily')sSet('wq_daily_done_'+todayKey()+'_'+difficulty,'1',false);
-  document.getElementById('rem').textContent=gi.e;
+  if(mode!=='review')updStreak();
+  document.getElementById('rem').innerHTML=gradeBadge(g);
   document.getElementById('rgr').textContent=g;document.getElementById('rgr').style.color=gi.c;
+  document.getElementById('rmode').textContent=modeName+' · '+qtName;
   document.getElementById('rmsg').textContent=t('gm')[g];
   document.getElementById('rtitle').textContent=t('title_'+g);
   document.getElementById('rnk').textContent=nick+t('your_r');
   document.getElementById('rsc').textContent=sc+scoreWord();
+  document.getElementById('rrate').textContent=pct+'% · '+cor+'/'+tot;
   document.getElementById('rnew').style.display=isN?'block':'none';
   document.getElementById('rco').textContent=cor;
   document.getElementById('rwr').textContent=tot-cor;
@@ -1010,21 +2610,23 @@ function endG(){
   document.getElementById('rwl').textContent=t('wr_rev')+' ('+wrongs.length+')';
   document.getElementById('rwls').innerHTML=wrongs.length?wrongs.map((a,i)=>{
     const q=a.q;
-    const correctName=q.type==='flag'?cname(q.code):lmName(q.lm)+' · '+cname(q.code);
-    const chosenCode=a.ch>=0?(q.type==='flag'?q.opts[a.ch][0]:q.opts[a.ch]):null;
-    const chosenName=a.ch>=0?cname(chosenCode):(lang==='zh'?'超时':(lang==='en'?'Time up':'시간 초과'));
+    const correctName=q.type==='flag'?cname(q.code):q.type==='cap'?cname(q.code)+' → '+(lang==='en'?(CAP_EN[q.code]||q.cap):q.cap):lmName(q.lm)+' · '+cname(q.code);
+    const chosenCode=a.ch>=0?(q.type==='land'?q.opts[a.ch]:q.opts[a.ch][0]):null;
+    const chosenName=a.ch>=0?(q.type==='cap'?(lang==='en'?(CAP_EN[chosenCode]||CAP[chosenCode]):CAP[chosenCode]):cname(chosenCode)):(lang==='zh'?'超时':(lang==='en'?'Time up':'시간 초과'));
     const flagCode=q.code;
     const qtxt=questionText(q);
     const note=q.type==='flag'
       ? `${t('review_hint')}: ${cname(q.code)} · ${tr(q.reg)}`
-      : `${t('review_hint')}: ${lmName(q.lm)} · ${lmCity(q.lm)} · ${cname(q.code)}`;
+      : q.type==='cap'
+        ? `${t('review_hint')}: ${cname(q.code)} · ${lang==='en'?(CAP_EN[q.code]||q.cap):q.cap}`
+        : `${t('review_hint')}: ${lmName(q.lm)} · ${lmCity(q.lm)} · ${cname(q.code)}`;
     return`<div class="review-card">
       <span class="fi fi-${flagCode}" style="width:42px;height:28px;border-radius:4px;background-size:cover;border:0.5px solid #475569;display:inline-block"></span>
       <div><div class="review-q">${i+1}. ${qtxt}</div>
       <div style="font-size:12px;color:#f87171;margin-bottom:2px">${t('my_a')}${chosenName}</div>
       <div style="font-size:12px;color:#4ade80">${t('rt_a')}${correctName}</div>
       <div class="review-note">${note}</div></div></div>`;
-  }).join(''):`<div style="padding:16px 0;color:#4ade80;font-size:13px;text-align:center">${lang==='zh'?'全部答对！':(lang==='en'?'All correct!':'전부 정답입니다!')}</div>`;
+  }).join(''):`<div style="padding:16px 0;color:#4ade80;font-size:13px;text-align:center">${lang==='zh'?'全部答对！':(lang==='en'?'All correct!':'🎉 전부 정답입니다!')}</div>`;
   wop=false;document.getElementById('rwls').style.display='none';document.getElementById('rwc').textContent='▼';
   goS('s-res');
 }
@@ -1032,8 +2634,9 @@ function endG(){
 function togW(){wop=!wop;document.getElementById('rwls').style.display=wop?'block':'none';document.getElementById('rwc').textContent=wop?'▲':'▼';}
 
 function retry(){
+  gameActive=true;
   stpAuto();
-  qi=0;sc=0;lv=3;as=[];ch=null;wop=false;t0=Date.now();
+  qi=0;sc=0;lv=3;as=[];ch=null;wop=false;t0=Date.now();comboCount=0;
   if(mode==='daily')qs=prepDaily();
   else if(mode==='review')qs=qtype==='flag'?prep('challenge'):prepLand('challenge');
   else qs=qtype==='flag'?prep(mode):prepLand(mode);
@@ -1041,10 +2644,11 @@ function retry(){
   goS('s-game');rnQ();document.onkeydown=kbH;
 }
 function retryWrong(){
+  gameActive=true;
   const wrongs=as.filter(a=>!a.ok).map(a=>a.q);
   if(!wrongs.length)return;
-  mode='review'; qs=sh(wrongs); qi=0; sc=0; lv=3; as=[]; ch=null; wop=false; t0=Date.now();
-  document.getElementById('gb').textContent=t('wrong_retry')+' · '+t('diff_'+difficulty);
+  mode='review'; qs=sh(wrongs); qi=0; sc=0; lv=3; as=[]; ch=null; wop=false; t0=Date.now(); comboCount=0;
+  document.getElementById('gb').textContent=t('wrong_retry');
   document.getElementById('gl').style.display='none';document.getElementById('gpw').style.display='block';
   goS('s-game'); rnQ(); document.onkeydown=kbH;
 }
@@ -1052,9 +2656,149 @@ function retryWrong(){
 function cpyR(){
   const cor=as.filter(a=>a.ok).length,g=grd(Math.round((cor/Math.max(as.length,1))*100));
   const modeName=mode==='survival'?t('surv'):(mode==='daily'?t('daily'):(mode==='review'?t('wrong_retry'):t('chal')));
-  const qtName=qtype==='flag'?t('qt_flag'):t('qt_land');
-  const txt=`🌍 ${t('title')}\n${nick}${t('your_r')}\n${modeName} · ${qtName} · ${t('diff_'+difficulty)}\n${lang==='zh'?'得分':(lang==='en'?'Score':'점수')}: ${sc}${scoreWord()} | ${lang==='zh'?'正确':(lang==='en'?'Correct':'정답')}: ${cor}/${as.length}\n${lang==='zh'?'等级':(lang==='en'?'Grade':'등급')}: ${g}\n\n${lang==='zh'?'一起挑战！':(lang==='en'?'Try the world challenge!':'나도 도전해보기!')}`;
+  const qtName=qtype==='flag'?t('qt_flag'):qtype==='cap'?t('qt_cap'):t('qt_land');
+  const txt=`🌍 ${t('title')}\n${nick}${t('your_r')}\n${modeName} · ${qtName}\n${lang==='zh'?'得分':(lang==='en'?'Score':'점수')}: ${sc}${scoreWord()} | ${lang==='zh'?'正确':(lang==='en'?'Correct':'정답')}: ${cor}/${as.length}\n${lang==='zh'?'等级':(lang==='en'?'Grade':'등급')}: ${g}\n\n${lang==='zh'?'一起挑战！':(lang==='en'?'Try the world challenge!':'나도 도전해보기!')}`;
   navigator.clipboard.writeText(txt).then(()=>{const b=document.getElementById('rsh');b.textContent=t('copied');setTimeout(()=>b.textContent=t('share'),2000);}).catch(()=>{});
+}
+
+const ICONS={
+  flag:`<svg viewBox="0 0 64 64" class="art-icon small" aria-hidden="true"><defs><linearGradient id="fg" x1="0" x2="1"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs><rect x="10" y="8" width="5" height="48" rx="2.5" fill="#dbeafe"/><path d="M17 11c12-6 22 7 34 1v27c-12 6-22-7-34-1z" fill="url(#fg)"/><path d="M17 11c12-6 22 7 34 1v9c-12 6-22-7-34-1z" fill="#f8fafc" opacity=".28"/><circle cx="36" cy="25" r="6" fill="#fde68a"/></svg>`,
+  landmark:`<svg viewBox="0 0 64 64" class="art-icon small" aria-hidden="true"><rect x="8" y="50" width="48" height="5" rx="2.5" fill="#cbd5e1"/><path d="M14 45h36L32 14z" fill="#38bdf8"/><path d="M22 45h20L32 22z" fill="#0f172a" opacity=".35"/><path d="M20 45h24v5H20z" fill="#facc15"/><circle cx="32" cy="30" r="4" fill="#fff7ed"/></svg>`,
+  easy:`<svg viewBox="0 0 64 64" class="art-icon small" aria-hidden="true"><path d="M32 52c-8-13-5-28 14-36 4 18-3 30-14 36z" fill="#86efac"/><path d="M31 52C24 40 17 31 10 25c16-3 26 6 21 27z" fill="#22c55e"/><path d="M32 51c2-12 6-22 14-32" stroke="#14532d" stroke-width="3" stroke-linecap="round"/></svg>`,
+  world:`<svg viewBox="0 0 64 64" class="art-icon small" aria-hidden="true"><circle cx="32" cy="32" r="23" fill="#2563eb"/><path d="M17 28c5-10 19-15 30-7-5 5-14 4-18 10-3 5-8 4-12-3z" fill="#22c55e"/><path d="M35 36c7-4 14 0 13 8-6 6-15 8-24 4 5-3 5-9 11-12z" fill="#86efac"/><path d="M32 9c7 9 7 37 0 46M9 32h46" stroke="#bfdbfe" stroke-width="2" opacity=".55"/></svg>`,
+  hard:`<svg viewBox="0 0 64 64" class="art-icon small" aria-hidden="true"><path d="M34 55c12-6 15-20 7-29 0 7-4 10-7 12 2-10-2-20-11-28 1 12-8 17-9 28-1 11 8 18 20 17z" fill="#f97316"/><path d="M31 55c7-4 9-11 4-17-1 5-4 7-7 10 1-7-1-12-6-17-1 10-6 14-3 20 2 4 6 5 12 4z" fill="#fde68a"/></svg>`,
+  shield:`<svg viewBox="0 0 96 96" class="art-icon" aria-hidden="true"><defs><linearGradient id="sg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#7dd3fc"/><stop offset=".52" stop-color="#2563eb"/><stop offset="1" stop-color="#16a34a"/></linearGradient><radialGradient id="shine" cx=".28" cy=".2" r=".7"><stop stop-color="#fff" stop-opacity=".62"/><stop offset=".42" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><path d="M48 7l33 12v24c0 22-13 37-33 46-20-9-33-24-33-46V19z" fill="#082f49" opacity=".7"/><path d="M48 9l30 11v23c0 20-12 34-30 43-18-9-30-23-30-43V20z" fill="url(#sg)"/><path d="M48 17l21 8v18c0 14-7 25-21 33-14-8-21-19-21-33V25z" fill="#020617" opacity=".18"/><path d="M21 21c11 2 23 1 37-8l20 8v10c-21 0-38 5-58 19V20z" fill="url(#shine)"/><path d="M35 49l8 8 20-23" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 70c11 5 21 5 32 0" fill="none" stroke="#bbf7d0" stroke-width="3" stroke-linecap="round" opacity=".72"/></svg>`,
+  route:`<svg viewBox="0 0 96 96" class="art-icon" aria-hidden="true"><defs><linearGradient id="rg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#0f172a"/><stop offset="1" stop-color="#1e3a8a"/></linearGradient><linearGradient id="road" x1="0" x2="1"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#facc15"/></linearGradient></defs><rect x="12" y="16" width="72" height="56" rx="15" fill="url(#rg)"/><path d="M18 28l19-7 21 7 18-7v47l-18 7-21-7-19 7z" fill="#0b1220" opacity=".48"/><path d="M37 21v47M58 28v47" stroke="#64748b" stroke-width="2" opacity=".45"/><path d="M24 60c12-24 23 9 37-13 4-6 7-8 13-8" fill="none" stroke="url(#road)" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 11"/><circle cx="24" cy="60" r="10" fill="#22c55e"/><circle cx="24" cy="60" r="4" fill="#dcfce7"/><circle cx="74" cy="39" r="10" fill="#facc15"/><path d="M74 20l9 17H65z" fill="#fb923c"/><path d="M72 86l-10-14h20z" fill="#38bdf8" opacity=".7"/></svg>`,
+  compass:`<svg viewBox="0 0 96 96" class="art-icon" aria-hidden="true"><defs><radialGradient id="cg" cx=".34" cy=".25" r=".76"><stop stop-color="#60a5fa"/><stop offset=".58" stop-color="#1d4ed8"/><stop offset="1" stop-color="#020617"/></radialGradient></defs><circle cx="48" cy="48" r="38" fill="#0f172a"/><circle cx="48" cy="48" r="34" fill="url(#cg)" stroke="#facc15" stroke-width="5"/><circle cx="48" cy="48" r="24" fill="#020617" opacity=".25"/><path d="M48 13v8M48 75v8M13 48h8M75 48h8" stroke="#fde68a" stroke-width="4" stroke-linecap="round"/><path d="M61 22L52 54 28 72l9-32z" fill="#fff7ed"/><path d="M61 22L52 54 70 38z" fill="#fb923c"/><path d="M37 40l15 14-24 18z" fill="#bae6fd" opacity=".76"/><circle cx="48" cy="48" r="6" fill="#facc15" stroke="#fff7ed" stroke-width="2"/></svg>`,
+  lives:`<svg viewBox="0 0 126 38" aria-hidden="true"><defs><linearGradient id="hg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fecdd3"/><stop offset=".5" stop-color="#fb7185"/><stop offset="1" stop-color="#be123c"/></linearGradient></defs><g filter="drop-shadow(0 4px 5px rgba(0,0,0,.28))"><path d="M22 33C8 23 5 12 11 6c5-5 12-2 15 4 3-6 10-9 15-4 6 6 3 17-11 27z" fill="url(#hg)"/><path d="M16 9c3-2 7-1 9 3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".55"/><path d="M63 33C49 23 46 12 52 6c5-5 12-2 15 4 3-6 10-9 15-4 6 6 3 17-11 27z" fill="url(#hg)"/><path d="M57 9c3-2 7-1 9 3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".55"/><path d="M104 33C90 23 87 12 93 6c5-5 12-2 15 4 3-6 10-9 15-4 6 6 3 17-11 27z" fill="url(#hg)"/><path d="M98 9c3-2 7-1 9 3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".55"/></g></svg>`,
+  music:`<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="mg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#67e8f9"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs><path d="M24 14l28-6v31" fill="none" stroke="url(#mg)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 14v32" fill="none" stroke="#dbeafe" stroke-width="6" stroke-linecap="round"/><ellipse cx="17" cy="48" rx="11" ry="8" fill="#38bdf8"/><ellipse cx="45" cy="40" rx="11" ry="8" fill="#facc15"/><path d="M52 8v13l-28 6V14z" fill="#93c5fd" opacity=".35"/></svg>`,
+  musicOff:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M24 14l28-6v31" fill="none" stroke="#94a3b8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 14v32" fill="none" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/><ellipse cx="17" cy="48" rx="11" ry="8" fill="#64748b"/><ellipse cx="45" cy="40" rx="11" ry="8" fill="#94a3b8"/><path d="M12 12l40 40" stroke="#fb7185" stroke-width="6" stroke-linecap="round"/></svg>`,
+  speaker:`<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 26h12l16-13v38L22 38H10z" fill="#dbeafe"/><path d="M45 23c5 5 5 13 0 18M50 16c10 10 10 26 0 36" fill="none" stroke="#38bdf8" stroke-width="5" stroke-linecap="round"/></svg>`,
+  voice:`<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="23" y="8" width="18" height="31" rx="9" fill="#fde68a"/><path d="M16 30c0 11 7 18 16 18s16-7 16-18M32 48v8M22 56h20" fill="none" stroke="#dbeafe" stroke-width="5" stroke-linecap="round"/></svg>`
+};
+
+function applyPictureIcons(){
+  const map=[
+    ['.icon-flag',ICONS.flag],['.icon-landmark',ICONS.landmark],['.icon-easy',ICONS.easy],
+    ['.icon-world',ICONS.world],['.icon-hard',ICONS.hard],['.icon-shield',ICONS.shield],
+    ['.icon-route',ICONS.route],['.icon-compass',ICONS.compass],['.life-preview',ICONS.lives]
+  ];
+  map.forEach(([sel,svg])=>document.querySelectorAll(sel).forEach(el=>{if(!el.dataset.icon){el.innerHTML=svg;el.dataset.icon='1'}}));
+  setSndButton();
+  const voice=document.getElementById('voicebtn'); if(voice&&!voice.dataset.icon){voice.innerHTML=ICONS.voice;voice.dataset.icon='1'}
+}
+
+let quizPreviewTimer=null;
+function initQuizPreview(){
+  const landImg=document.getElementById('qt-land-img');
+  const fgImgs=document.querySelectorAll('.flag-grid .fg-img');
+  if(!landImg||quizPreviewTimer)return;
+  const flagSets=[
+    ['br','jp','de','us'],['fr','kr','au','gb'],
+    ['cn','in','mx','za'],['eg','tr','it','ar']
+  ];
+  const lands=[
+    'https://commons.wikimedia.org/wiki/Special:Redirect/file/Eiffel_Tower_from_the_Tour_Montparnasse_3%2C_Paris_May_2014.jpg?width=320',
+    'https://commons.wikimedia.org/wiki/Special:Redirect/file/Sydney_Opera_House_Sails.jpg?width=320',
+    'https://commons.wikimedia.org/wiki/Special:Redirect/file/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg?width=320',
+    'https://commons.wikimedia.org/wiki/Special:Redirect/file/Taj_Mahal_in_March_2004.jpg?width=320',
+    'https://commons.wikimedia.org/wiki/Special:Redirect/file/Christ_the_Redeemer_-_Cristo_Redentor.jpg?width=320'
+  ];
+  const capFlags=['fr','jp','de','br','kr','au','it','eg'];
+  const base='https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/';
+  const capFlagEl=document.getElementById('qt-cap-flag');
+  let idx=0;
+  function paint(){
+    idx=(idx+1)%Math.max(flagSets.length,lands.length,capFlags.length);
+    landImg.style.opacity='0';
+    fgImgs.forEach(im=>im.style.opacity='0');
+    if(capFlagEl)capFlagEl.style.opacity='0';
+    setTimeout(()=>{
+      const fs=flagSets[idx%flagSets.length];
+      fgImgs.forEach((im,i)=>{im.src=base+fs[i]+'.svg';im.style.opacity='1';});
+      landImg.src=lands[idx%lands.length];
+      landImg.style.opacity='1';
+      if(capFlagEl){capFlagEl.src=base+capFlags[idx%capFlags.length]+'.svg';capFlagEl.style.opacity='1';}
+    },180);
+  }
+  quizPreviewTimer=setInterval(paint,3500);
+  setTimeout(paint,800);
+}
+
+function initGlobe3D(){
+  const cv=document.getElementById('globe3d');
+  if(!cv||cv.dataset.ready)return;
+  cv.dataset.ready='1';
+  const ctx=cv.getContext('2d');
+  const continents=[
+    [[-125,48],[-104,58],[-78,45],[-83,25],[-102,18],[-118,30]],
+    [[-80,10],[-54,6],[-45,-18],[-63,-55],[-78,-28]],
+    [[-10,55],[20,60],[42,45],[30,28],[4,34],[-12,44]],
+    [[5,31],[30,28],[45,8],[34,-31],[16,-35],[-5,5]],
+    [[42,52],[90,58],[130,42],[118,10],[78,5],[54,24]],
+    [[110,-10],[154,-18],[145,-42],[115,-38]],
+    [[-42,72],[-20,76],[-18,62],[-40,60]]
+  ];
+  const cities=[[-74,40],[2,49],[127,37],[139,35],[151,-34],[-43,-23],[31,30],[77,28]];
+  let rot=0,last=0;
+  function project(lon,lat,r,cx,cy){
+    const lam=(lon+rot)*Math.PI/180,phi=lat*Math.PI/180;
+    const x=Math.cos(phi)*Math.sin(lam),y=Math.sin(phi),z=Math.cos(phi)*Math.cos(lam);
+    return {x:cx+r*x,y:cy-r*y,z};
+  }
+  function draw(tick){
+    if(tick&&tick-last<33){requestAnimationFrame(draw);return}
+    last=tick;rot+=0.45;
+    const W=cv.width,H=cv.height,cx=W/2,cy=H/2,r=W*0.38;
+    ctx.clearRect(0,0,W,H);
+    const glow=ctx.createRadialGradient(cx,cy,10,cx,cy,r*1.42);
+    glow.addColorStop(0,'rgba(125,211,252,.36)');
+    glow.addColorStop(0.55,'rgba(37,99,235,.12)');
+    glow.addColorStop(1,'rgba(14,165,233,0)');
+    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(cx,cy,r*1.42,0,Math.PI*2);ctx.fill();
+    const ocean=ctx.createRadialGradient(cx-r*.35,cy-r*.45,r*.08,cx,cy,r);
+    ocean.addColorStop(0,'#7dd3fc');ocean.addColorStop(.22,'#0ea5e9');ocean.addColorStop(.72,'#1d4ed8');ocean.addColorStop(1,'#082f49');
+    ctx.fillStyle=ocean;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+    ctx.strokeStyle='rgba(191,219,254,.22)';ctx.lineWidth=1.3;
+    for(let lat=-60;lat<=60;lat+=30){
+      ctx.beginPath();
+      for(let lon=-180;lon<=180;lon+=5){
+        const p=project(lon,lat,r,cx,cy);
+        if(p.z>-.08){if(lon===-180)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y)}
+      }
+      ctx.stroke();
+    }
+    for(let lon=-150;lon<=180;lon+=30){
+      ctx.beginPath();let started=false;
+      for(let lat=-80;lat<=80;lat+=4){
+        const p=project(lon,lat,r,cx,cy);
+        if(p.z>-.08){if(!started){ctx.moveTo(p.x,p.y);started=true}else ctx.lineTo(p.x,p.y)}
+      }
+      ctx.stroke();
+    }
+    continents.forEach(poly=>{
+      ctx.beginPath();let any=false;
+      poly.forEach(pt=>{
+        const p=project(pt[0],pt[1],r,cx,cy);
+        if(p.z>-.25){if(!any){ctx.moveTo(p.x,p.y);any=true}else ctx.lineTo(p.x,p.y)}
+      });
+      if(any){ctx.closePath();ctx.fillStyle='rgba(34,197,94,.78)';ctx.fill();ctx.strokeStyle='rgba(187,247,208,.42)';ctx.lineWidth=1.2;ctx.stroke()}
+    });
+    cities.forEach(c=>{
+      const p=project(c[0],c[1],r,cx,cy);
+      if(p.z>0){ctx.fillStyle='rgba(253,224,71,'+(0.45+p.z*.55)+')';ctx.beginPath();ctx.arc(p.x,p.y,2.1+p.z*1.9,0,Math.PI*2);ctx.fill()}
+    });
+    const shade=ctx.createLinearGradient(cx-r,cy,cx+r,cy);
+    shade.addColorStop(0,'rgba(2,6,23,.42)');shade.addColorStop(.44,'rgba(2,6,23,0)');shade.addColorStop(1,'rgba(2,6,23,.32)');
+    ctx.fillStyle=shade;ctx.fillRect(cx-r,cy-r,r*2,r*2);
+    ctx.restore();
+    ctx.strokeStyle='rgba(219,234,254,.58)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='rgba(250,204,21,.45)';ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(cx,cy,r*1.13,r*.28,-0.38,0,Math.PI*2);ctx.stroke();
+    requestAnimationFrame(draw);
+  }
+  draw(0);
+  requestAnimationFrame(draw);
 }
 
 // ============================================================
@@ -1082,10 +2826,54 @@ async function svLB(cor,tot,el,g){
   await sSet(key,JSON.stringify(list),true);
 }
 async function ldLB(m,qt){try{return JSON.parse(await sGet('wq_'+m+'_'+qt+'_'+difficulty,true)||'[]');}catch(e){return[];}}
-async function svBest(){await sSet('wq_bs_'+difficulty,String(bS),false);await sSet('wq_bc_'+difficulty,String(bC),false);}
+async function svBest(){await sSet('wq_bs_'+difficulty,String(bS),false);await sSet('wq_bc_'+difficulty,String(bC),false);await sSet('wq_bd_'+difficulty,String(bD),false);}
+
+async function updStreak(){
+  const today=todayKey();
+  const last=localStorage.getItem('wq_streak_date')||'';
+  const count=parseInt(localStorage.getItem('wq_streak_count')||'0');
+  const yesterday=(()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');})();
+  let next=1;
+  if(last===today)next=count;
+  else if(last===yesterday)next=count+1;
+  localStorage.setItem('wq_streak_date',today);
+  localStorage.setItem('wq_streak_count',String(next));
+  renderStreak(next);
+}
+
+function renderStreak(n){
+  const el=document.getElementById('home-streak');
+  if(!el)return;
+  if(!n||n<2){el.style.display='none';return;}
+  el.style.display='flex';
+  el.innerHTML='🔥 <strong>'+n+'</strong>&nbsp;'+(lang==='en'?'day streak!':lang==='zh'?'连续天数！':'일 연속 플레이!');
+}
+
+async function ldStreak(){
+  const today=todayKey();
+  const last=localStorage.getItem('wq_streak_date')||'';
+  const count=parseInt(localStorage.getItem('wq_streak_count')||'0');
+  const yesterday=(()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');})();
+  const alive=last===today||last===yesterday;
+  renderStreak(alive?count:0);
+}
 async function ldBests(){
-  try{const s=await sGet('wq_bs_'+difficulty,false),c=await sGet('wq_bc_'+difficulty,false);if(s)bS=parseInt(s)||0;if(c)bC=parseInt(c)||0;}catch(e){}
-  try{const sl=await ldLB('survival',qtype),top=sl.slice(0,3);if(top.length){document.getElementById('hpv').style.display='block';const md=['🥇','🥈','🥉'];document.getElementById('hpl').innerHTML=top.map((e,i)=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--brd)"><span>${md[i]} ${e.nickname}</span><span style="color:var(--acc);font-weight:600">${e.score}${scoreWord()}</span></div>`).join('');}}catch(e){}
+  try{const s=await sGet('wq_bs_'+difficulty,false),c=await sGet('wq_bc_'+difficulty,false),d=await sGet('wq_bd_'+difficulty,false);bS=parseInt(s)||0;bC=parseInt(c)||0;bD=parseInt(d)||0;}catch(e){}
+  try{
+    const unit=scoreWord();
+    const sr=document.getElementById('ms-r'),cr=document.getElementById('mc-r'),dr=document.getElementById('md-r');
+    if(sr)sr.textContent=t('best_surv')+': '+(bS||0)+unit;
+    if(cr)cr.textContent=t('best_chal')+': '+(bC||0)+unit;
+    if(dr)dr.textContent=t('best_daily')+': '+(bD||0)+unit;
+  }catch(e){}
+  try{
+    const panel=document.getElementById('hpv'),list=document.getElementById('hpl');
+    const sl=await ldLB('survival',qtype),top=sl.slice(0,3);
+    if(!top.length){panel.style.display='none';list.innerHTML='';return;}
+    panel.style.display='block';
+    const md=['🥇','🥈','🥉'];
+    list.innerHTML=top.map((e,i)=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--brd)"><span>${md[i]} ${e.nickname}</span><span style="color:var(--acc);font-weight:600">${e.score}${scoreWord()}</span></div>`).join('');
+  }catch(e){}
 }
 async function openLB(){ltab='survival';document.getElementById('lts').className='tab on';document.getElementById('ltc').className='tab';goS('s-lb');rnLB();}
 async function slt(t2){ltab=t2;document.getElementById('lts').className='tab'+(t2==='survival'?' on':'');document.getElementById('ltc').className='tab'+(t2==='challenge'?' on':'');rnLB();}
@@ -1101,7 +2889,16 @@ async function rnLB(){
 // ============================================================
 // INIT
 // ============================================================
+(function(){const sp=document.getElementById('s-splash');if(!sp)return;setTimeout(()=>{sp.classList.add('out');setTimeout(()=>sp.remove(),700);},2200);})();
 renderHome();
+initBgm();
+document.addEventListener('pointerdown',()=>{if(bgmEnabled&&!BGM.isPlaying()){BGM.start();setSndButton();}},{once:true});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){BGM.stop();}
+  else{if(bgmEnabled)BGM.start();}
+});
+initGlobe3D();
+applyPictureIcons();
 ldBests();
 document.onkeydown=(e)=>{if(document.getElementById('s-game').classList.contains('on'))kbH(e);};
 </script>
